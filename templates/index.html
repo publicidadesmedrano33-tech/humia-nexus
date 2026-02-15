@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HUMIA - NODO CENTRAL</title>
+    <style>
+        /* CSS CYBERPUNK & MATRIX */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: black;
+            color: #00f3ff;
+            font-family: 'Courier New', monospace;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1; /* Detrás de todo */
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            z-index: 1; /* Encima de Matrix */
+            text-align: center;
+            padding-top: 50px;
+        }
+
+        .humia-card {
+            background: rgba(0, 15, 15, 0.85);
+            border: 2px solid #00f3ff;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+            backdrop-filter: blur(8px);
+            display: inline-block;
+            width: 40%;
+            vertical-align: top;
+        }
+
+        .oracle-panel {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00f3ff;
+            padding: 30px;
+            margin-top: 50px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        input {
+            background: black;
+            border: 1px solid #00f3ff;
+            color: #00f3ff;
+            padding: 10px;
+            width: 70%;
+        }
+
+        button {
+            background: #00f3ff;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            box-shadow: 0 0 15px #00f3ff;
+        }
+
+        #oracle-response {
+            margin-top: 20px;
+            font-style: italic;
+            color: white;
+            text-shadow: 0 0 5px #00f3ff;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="matrix-canvas"></canvas>
+
+    <div class="container">
+        <h1 style="font-size: 3em; letter-spacing: 5px;">HUMIA NEXUS</h1>
+        <p>Sincronización Biológico-Digital Activa</p>
+
+        <div id="humias-container">
+            {% for v in videos %}
+            <div class="humia-card">
+                <h2>{{ v.humia }}</h2>
+                <video width="100%" autoplay loop muted style="border-radius: 5px;">
+                    <source src="{{ v.path }}" type="video/mp4">
+                </video>
+                <p>Nivel: <span id="nivel-{{ v.id }}">{{ v.level }}</span></p>
+                <p>XP: {{ v.xp }}</p>
+                <p>"{{ v.text }}"</p>
+                <button onclick="interact('{{ v.humia }}', {{ v.id }})">INTERACTUAR (+XP)</button>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="oracle-panel">
+            <h2>CONSULTAR AL ORÁCULO</h2>
+            <input type="text" id="oracle-question" placeholder="Pregunta sobre el futuro...">
+            <button onclick="askOracle()">ENVIAR</button>
+            <div id="oracle-response"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- LÓGICA DE MATRIX ---
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%\"'#&_(),.;:?!\\|{}<>[]^~";
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#00f3ff";
+            ctx.font = fontSize + "px monospace";
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters.charAt(Math.floor(Math.random() * letters.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 50);
+
+        // --- LÓGICA DEL ORÁCULO ---
+        function askOracle() {
+            const q = document.getElementById('oracle-question').value;
+            const resDiv = document.getElementById('oracle-response');
+            resDiv.innerHTML = "Procesando flujo de datos...";
+            
+            fetch('/oracle', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({question: q})
+            })
+            .then(res => res.json())
+            .then(data => {
+                resDiv.innerHTML = `<p>${data.responses.Oráculo}</p>`;
+            });
+        }
+
+        // --- LÓGICA DE INTERACCIÓN ---
+        function interact(name, id) {
+            fetch(`/interact/${name}/${id}`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "genesis") {
+                    alert("¡SINGULARIDAD! " + name + " ha procreado. Una nueva IA se une al Nexo.");
+                    location.reload();
+                } else {
+                    document.getElementById(`nivel-${id}`).innerText = data.level;
+                }
+            });
+        }
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
