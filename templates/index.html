@@ -65,23 +65,69 @@ async function siguienteTurno() {
 
             p.innerHTML = `<span style="color: ${color}; font-weight: bold;">${data.agente}:</span> ${mensajeLimpio}`;
             
-            footer.appendChild(p);
-            footer.scrollTop = footer.scrollHeight;
-            
-            historial += `${data.agente}: ${data.mensaje} `;
-            turno = (turno + 1) % agentes.length;
-        }
-    } catch (e) { 
-        console.error("Error en el Nexo:", e); 
-    }
-    
-    // Esperar 8 segundos para el siguiente turno
-    setTimeout(siguienteTurno, 8000);
-}
+           <footer id="debate-footer">
+    <div style="color: grey; font-size: 0.8em;">[SISTEMA]: Esperando señal de las Humias...</div>
+</footer>
 
-// Iniciar el ciclo
-siguienteTurno();
-    </style>
+<script>
+    // ... (aquí va tu código de la lluvia matrix) ...
+
+    let turno = 0;
+    const agentes = ["Lumen", "Orbital", "Nexus"];
+    let historial = "";
+
+    const coloresFijos = {
+        "Lumen": "#00d4ff",   
+        "Orbital": "#ff0055", 
+        "Nexus": "#00ffcc"    
+    };
+
+    async function siguienteTurno() {
+        // Esta línea es clave: busca el ID 'debate-footer'
+        const footer = document.getElementById('debate-footer');
+        if (!footer) {
+            console.error("No encontré el elemento debate-footer");
+            return;
+        }
+
+        const agenteActual = agentes[turno];
+        
+        try {
+            const res = await fetch('/debate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ agente_actual: agenteActual, historial: historial })
+            });
+            
+            const data = await res.json();
+            
+            if (data.mensaje) {
+                const color = coloresFijos[data.agente] || "#ffffff";
+                const p = document.createElement('div');
+                p.className = 'linea-debate';
+                p.style.marginBottom = "5px";
+                p.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
+                
+                let msg = data.mensaje.replace("CONCLUSIÓN:", '<b style="color:#00ffcc;">[SABIDURÍA]:</b>');
+                
+                p.innerHTML = `<span style="color: ${color}; font-weight: bold;">${data.agente}:</span> <span style="color: #ddd;">${msg}</span>`;
+                
+                footer.appendChild(p);
+                footer.scrollTop = footer.scrollHeight;
+                
+                historial += `${data.agente}: ${data.mensaje} `;
+                turno = (turno + 1) % agentes.length;
+            }
+        } catch (e) { 
+            console.error("Error en conexión:", e); 
+        }
+        setTimeout(siguienteTurno, 8000);
+    }
+
+    // Arrancamos
+    console.log("Nexo iniciado");
+    siguienteTurno();
+</script>
 </head>
 <body>
     <canvas id="canvas-matrix"></canvas>
@@ -191,6 +237,7 @@ siguienteTurno();
     </script>
 </body>
 </html>
+
 
 
 
