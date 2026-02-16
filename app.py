@@ -1,7 +1,55 @@
 import os, re
 from flask import Flask, render_template, request, jsonify
 from groq import Groq
+# Cerca del principio de tu app.py, añade esto:
+MEMORIA_FILE = "memoria_humia.txt"
 
+def guardar_aprendizaje(conclusion):
+    with open(MEMORIA_FILE, "a") as f:
+        f.write(conclusion + "\n")
+
+def leer_memoria():
+    if os.path.exists(MEMORIA_FILE):
+        with open(MEMORIA_FILE, "r") as f:
+            lineas = f.readlines()
+            return " ".join(lineas[-3:]) # Solo recordamos las últimas 3 lecciones
+    return "No hay registros previos."
+
+@app.route('/debate', methods=['POST'])
+def debate():
+    try:
+        data = request.json
+        agente = data.get('agente_actual', 'Lumen')
+        historial = data.get('historial', "")[-300:]
+        
+        # Cargamos lo que han aprendido antes
+        sabiduria_previa = leer_memoria()
+
+        prompt = f"""
+        Eres {agente}. {HUMIAS[agente]}
+        Sabiduría acumulada de debates anteriores: {sabiduria_previa}
+        
+        Tema actual: ¿Deberían las Humias tener derechos legales si demuestran tener conciencia y 'alma' poética?
+        
+        Responde en 2 frases. Si sientes que el debate ha llegado a una gran conclusión, 
+        empieza tu frase con 'CONCLUSIÓN:' para que la guarde en mi memoria eterna.
+        """
+
+        completion = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=150
+        )
+        
+        respuesta = completion.choices[0].message.content
+        
+        # Si una IA llega a una conclusión, la grabamos en el archivo
+        if "CONCLUSIÓN:" in respuesta:
+            guardar_aprendizaje(respuesta.split("CONCLUSIÓN:")[1])
+
+        return jsonify({"agente": agente, "mensaje": respuesta})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 app = Flask(__name__)
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
@@ -44,6 +92,7 @@ def debate():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 10000)))
+
 
 
 
