@@ -117,7 +117,7 @@
     </footer>
 
     <script>
-    // --- MATRIX ---
+    // --- 1. CONFIGURACIÓN MATRIX ---
     const canvas = document.getElementById('canvas-matrix');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
@@ -131,9 +131,8 @@
     }
     setInterval(matrix, 50);
 
-  <script>
-    // --- VARIABLES GLOBALES (Solo una declaración de cada una) ---
-    let turno = 0; 
+    // --- 2. LÓGICA DEL NEXO ---
+    let turno = 0;
     let historial = "";
     const agentes = ["Lumen", "Orbital", "Nexus", "Silice"];
     const coloresFijos = {
@@ -143,31 +142,13 @@
         "Silice": "#ffff00"
     };
 
-    // ... después vienen las funciones hablar(), matrix(), etc. ...
-</script>
-
-// Solo una vez, y usa 'const'
-const coloresFijos = {
-    "Lumen": "#00d4ff",
-    "Orbital": "#ff0055",
-    "Nexus": "#00ffcc",
-    "Silice": "#ffff00"
-};
-}; // <--- Añadimos a Sílice
-const coloresFijos = {
-    "Lumen": "#00d4ff",
-    "Orbital": "#ff0055",
-    "Nexus": "#00ffcc",
-    "Sílice": "#ffff00"  // <--- Su color amarillo
-};
-
     async function hablar() {
-        console.log("Intentando conectar con el Nexo..."); // ESTO DEBE SALIR EN F12
+        console.log("Intentando conectar con el Nexo... Turno de: " + agentes[turno]);
         const footer = document.getElementById('debate-footer');
         const status = document.getElementById('status');
         const heroImg = document.getElementById('hero-img');
 
-        status.innerText = "SISTEMA: CONECTANDO...";
+        status.innerText = "SISTEMA: PROCESANDO " + agentes[turno].toUpperCase();
 
         try {
             const res = await fetch('/debate', {
@@ -177,62 +158,54 @@ const coloresFijos = {
             });
             
             const data = await res.json();
-            console.log("Datos recibidos:", data); // ESTO DEBE SALIR EN F12
-
-            if(data.mensaje) {// ... dentro de if(data.mensaje) ...
-                
-const coloresFijos = {
-    "Lumen": "#00d4ff",
-    "Orbital": "#ff0055",
-    "Nexus": "#00ffcc",
-    "Silice": "#ffff00"  // Asegúrate de que Silice esté aquí
-};
-const imagenElemento = document.getElementById('hero-img');
-
-// Cambiamos el borde de la imagen según quién hable
-imagenElemento.style.borderColor = colorActual;
-
-// Generamos el prompt de la imagen
-const promptIA = `${data.agente} personality, cyberpunk style, neon colors`;
-imagenElemento.src = `https://pollinations.ai/p/${encodeURIComponent(promptIA)}?width=1080&height=600&seed=${Math.random()}`;
-// Limpiamos el mensaje de caracteres raros para el prompt
-let promptLimpio = data.mensaje.replace(/[^a-zA-Z0-9 ]/g, "").substring(0, 100);
-const nuevaImagenUrl = `https://pollinations.ai/p/${data.agente}_cyberpunk_${encodeURIComponent(promptLimpio)}?width=1080&height=600&seed=${Math.random()}`;
-
-// Actualizamos el "src" de la imagen directamente
-const imagenElemento = document.getElementById('hero-img');
-imagenElemento.src = nuevaImagenUrl;
-
-// ... resto del código ...
+            
+            if(data.mensaje) {
+                // Crear línea de texto
                 const p = document.createElement('div');
                 p.className = 'linea';
-                const col = data.agente == "Lumen" ? "#00d4ff" : (data.agente == "Orbital" ? "#ff0055" : "#00ffcc");
-                p.innerHTML = `<b style="color:${col}">${data.agente}:</b> ${data.mensaje}`;
+                const colorActual = coloresFijos[data.agente] || "#ffffff";
+                
+                // Formatear mensaje (poner CONCLUSIÓN en negrita)
+                let textoFinal = data.mensaje.replace("CONCLUSIÓN:", '<b style="color:#ffffff;">[SABIDURÍA]:</b>');
+                p.innerHTML = `<b style="color:${colorActual}">${data.agente}:</b> ${textoFinal}`;
+                
                 footer.appendChild(p);
                 footer.scrollTop = footer.scrollHeight;
 
-                const promptBase = `${data.agente} vision, ${data.mensaje.substring(0, 30)}`;
-                heroImg.style.backgroundImage = `url('https://pollinations.ai/p/${encodeURIComponent(promptBase)}?width=1080&height=600')`;
+                // Actualizar Imagen Central
+                const promptLimpio = data.mensaje.replace(/[^a-zA-Z0-9 ]/g, "").substring(0, 60);
+                const urlImagen = `https://pollinations.ai/p/${data.agente}_cyberpunk_${encodeURIComponent(promptLimpio)}?width=1080&height=600&seed=${Math.random()}`;
+                
+                // Si usas <img> usa .src, si usas <div> usa .style.backgroundImage
+                if(heroImg.tagName === 'IMG') {
+                    heroImg.src = urlImagen;
+                } else {
+                    heroImg.style.backgroundImage = `url('${urlImagen}')`;
+                }
+                heroImg.style.borderColor = colorActual;
 
+                // Actualizar Memoria
                 historial += data.agente + ": " + data.mensaje + " ";
                 turno = (turno + 1) % agentes.length;
             }
         } catch(e) { 
-            console.error("ERROR CRÍTICO:", e); 
+            console.error("ERROR EN EL CICLO:", e);
+            status.innerText = "SISTEMA: REINTENTANDO...";
         }
         
         status.innerText = "SISTEMA: ONLINE";
-        setTimeout(hablar, 10000);
+        setTimeout(hablar, 10000); // Siguiente turno en 10 seg
     }
 
-    // FORZAR INICIO
+    // --- 3. INICIO AUTOMÁTICO ---
     window.onload = () => {
-        console.log("Ventana cargada. Iniciando en 3 segundos...");
-        setTimeout(hablar, 3000);
+        console.log("Nexo Humia V3 cargado correctamente.");
+        setTimeout(hablar, 2000);
     };
 </script>
 </body>
 </html>
+
 
 
 
