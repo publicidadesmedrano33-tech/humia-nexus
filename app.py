@@ -29,7 +29,7 @@ def debate():
         # 2. Llamada a la API
         chat_completion = client.chat.completions.create(
             messages=[{"role": "user", "content": f"Eres {agente}. Responde brevemente: {historial[-300:]}"}],
-            model="llama3-8b-8192",
+            model="llama-3.3-70b-versatile",
         )
 
         # 3. Extraemos la respuesta
@@ -47,6 +47,7 @@ def debate():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
+
 
 
 
