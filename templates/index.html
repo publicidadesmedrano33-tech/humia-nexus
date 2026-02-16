@@ -2,42 +2,33 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>NEXO HUMIA - Observatorio de Agentes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXO HUMIA - EVOLUCIÓN</title>
     <style>
-        body { background-color: black; color: #008cff; font-family: 'Courier New', Courier, monospace; margin: 0; overflow: hidden; }
-        #canvas { position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.4; }
-        
-        #observatory {
-            max-width: 800px; margin: 50px auto; padding: 20px;
-            background: rgba(0, 10, 20, 0.8); border: 1px solid #008cff;
-            box-shadow: 0 0 20px #008cff; height: 80vh; overflow-y: auto;
-        }
-
-        .mensaje { margin-bottom: 20px; padding: 10px; border-left: 3px solid; animation: fadeIn 1s; }
-        .Lumen { border-color: #00ffcc; color: #00ffcc; }
-        .Orbital { border-color: #ff3366; color: #ff3366; }
-        .Nexus { border-color: #008cff; color: #008cff; }
-        
-        .agente-nombre { font-weight: bold; text-transform: uppercase; font-size: 0.8em; margin-bottom: 5px; }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        body { background: #000; color: #0f0; font-family: 'Courier New', monospace; margin: 0; overflow: hidden; }
+        #canvas-matrix { position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.3; }
+        #observatory { height: 100vh; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .mensaje { border-left: 3px solid; padding: 10px; background: rgba(0, 20, 0, 0.8); max-width: 80%; border-radius: 0 10px 10px 0; animation: fadeIn 0.5s; }
+        .Lumen { border-color: #008cff; color: #87ceeb; }
+        .Orbital { border-color: #ff0055; color: #ff6699; }
+        .Nexus { border-color: #00ffcc; color: #00ffcc; }
+        .agente-nombre { font-weight: bold; font-size: 0.8em; text-transform: uppercase; margin-bottom: 5px; opacity: 0.7; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
     </style>
 </head>
 <body>
-    <canvas id="canvas"></canvas>
-    
+    <canvas id="canvas-matrix"></canvas>
     <div id="observatory">
-        <h2 style="text-align: center;">CONFLUENCIA DE HUMIAS (MODO OBSERVADOR)</h2>
-        <div id="chat-flow"></div>
+        <div class="mensaje Nexus">SISTEMA INICIALIZADO: Cargando Memoria Humia...</div>
     </div>
 
     <script>
-        // --- LLUVIA DE MATRIX AZUL ---
-        const canvas = document.getElementById('canvas');
+        // --- EFECTO MATRIX ---
+        const canvas = document.getElementById('canvas-matrix');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        const chars = "010101HUMIANEXUS010101";
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()*&^%";
         const fontSize = 16;
         const columns = canvas.width / fontSize;
         const drops = Array(Math.floor(columns)).fill(1);
@@ -45,108 +36,55 @@
         function drawMatrix() {
             ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#008cff";
+            ctx.fillStyle = "#0f0";
             ctx.font = fontSize + "px monospace";
-            drops.forEach((y, i) => {
-                const text = chars[Math.floor(Math.random() * chars.length)];
-                ctx.fillText(text, i * fontSize, y * fontSize);
-                if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters.charAt(Math.floor(Math.random() * letters.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
                 drops[i]++;
-            });
+            }
         }
-        setInterval(drawMatrix, 50);
+        setInterval(drawMatrix, 33);
 
-        // --- LÓGICA DEL DEBATE AUTÓNOMO ---
-        const flow = document.getElementById('chat-flow');
+        // --- LÓGICA DE DEBATE ---
+        let turno = 0;
         const agentes = ["Lumen", "Orbital", "Nexus"];
         let historial = "";
-        let turno = 0; // 0=Lumen, 1=Orbital, 2=Nexus
-const agentes = ["Lumen", "Orbital", "Nexus"];
-
-async function siguienteTurno() {
-    const agenteActual = agentes[turno]; // <--- Aquí selecciona al agente según el turno
-    
-    console.log("Turno de: " + agenteActual); // Esto te servirá para ver el cambio en F12
-
-    try {
-        const response = await fetch('/debate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                agente_actual: agenteActual, // <--- Enviamos el nombre al servidor
-                historial: historial 
-            })
-        });
-
-        const data = await response.json();
-        
-        // ... (aquí va el código que muestra el mensaje y la imagen) ...
-
-        // --- ESTA ES LA CLAVE: CAMBIAR EL TURNO ---
-        turno = (turno + 1) % agentes.length; 
-        
-        // Esperar 5 segundos y llamar al siguiente agente
-        setTimeout(siguienteTurno, 5000);
-
-    } catch (e) {
-        console.error("Error, reintentando...", e);
-        setTimeout(siguienteTurno, 3000);
-    }
-}
 
         async function siguienteTurno() {
-    const agenteActual = agentes[turno];
-    
-    try {
-        const response = await fetch('/debate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ agente_actual: agenteActual, historial: historial })
-        });
-        
-        const data = await response.json();
-        
-        // --- SALVAVIDAS: Si el servidor devuelve error o vacío, no pongas "undefined" ---
-        if (!data.mensaje || data.error) {
-            console.log("Esperando respuesta válida...");
-            setTimeout(siguienteTurno, 3000); // Reintenta en 3 segundos
-            return;
+            const flow = document.getElementById('observatory');
+            const agenteActual = agentes[turno];
+
+            try {
+                const response = await fetch('/debate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ agente_actual: agenteActual, historial: historial })
+                });
+                
+                const data = await response.json();
+                
+                if (data.mensaje) {
+                    const div = document.createElement('div');
+                    div.className = `mensaje ${data.agente}`;
+                    div.innerHTML = `<div class="agente-nombre">${data.agente}</div><div>${data.mensaje}</div>`;
+                    flow.appendChild(div);
+                    
+                    historial += `${data.agente}: ${data.mensaje} `;
+                    flow.scrollTop = flow.scrollHeight;
+                    
+                    turno = (turno + 1) % agentes.length;
+                }
+            } catch (e) {
+                console.error("Error de conexión:", e);
+            }
+            setTimeout(siguienteTurno, 6000); // 6 segundos entre respuestas
         }
 
-        const div = document.createElement('div');
-        div.className = `mensaje ${data.agente}`;
-        let contenido = `<div class="agente-nombre">${data.agente}</div><div>${data.mensaje}</div>`;
-
-        if (data.foto_prompt) {
-            const imgUrl = `https://pollinations.ai/p/${encodeURIComponent(data.foto_prompt)}?width=1024&height=512&seed=${Math.random()}&model=flux`;
-            contenido += `<div style="margin-top:10px; border: 1px solid #008cff;">
-                            <img src="${imgUrl}" style="width:100%; border-radius:4px;" alt="Visión de ${data.agente}">
-                          </div>`;
-        }
-
-        div.innerHTML = contenido;
-        flow.appendChild(div);
-        
-        historial += `${data.agente}: ${data.mensaje} `;
-        // Limitar historial para que no se sature el cerebro
-        if (historial.length > 1000) historial = historial.substring(500);
-
-        document.getElementById('observatory').scrollTop = document.getElementById('observatory').scrollHeight;
-        
-        turno = (turno + 1) % agentes.length;
-        setTimeout(siguienteTurno, 5000); // 5 segundos para que te de tiempo a leer
-        
-    } catch (e) {
-        console.error("Error en la conexión", e);
-        setTimeout(siguienteTurno, 5000); // Reintentar si se cae el server
-    }
-}
-
-        // Iniciar debate
-        siguienteTurno();
+        // Arrancar el debate automáticamente
+        setTimeout(siguienteTurno, 2000);
     </script>
 </body>
 </html>
-
-
 
