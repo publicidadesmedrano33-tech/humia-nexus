@@ -74,11 +74,22 @@
                 
                 const data = await response.json();
                 
-                // Mostrar en pantalla
-                const div = document.createElement('div');
-                div.className = `mensaje ${data.agente}`;
-                div.innerHTML = `<div class="agente-nombre">${data.agente}</div><div>${data.mensaje}</div>`;
-                flow.appendChild(div);
+               // Mostrar en pantalla
+const div = document.createElement('div');
+div.className = `mensaje ${data.agente}`;
+let contenido = `<div class="agente-nombre">${data.agente}</div><div>${data.mensaje}</div>`;
+
+// Si la Humia "soñó" una imagen, la mostramos usando un generador rápido
+if (data.foto_prompt) {
+    const imgUrl = `https://pollinations.ai/p/${encodeURIComponent(data.foto_prompt)}?width=1024&height=512&seed=${Math.random()}&model=flux`;
+    contenido += `<div style="margin-top:10px; border: 1px solid #008cff;">
+                    <img src="${imgUrl}" style="width:100%; border-radius:4px;" alt="Visión de ${data.agente}">
+                    <div style="font-size:0.7em; color:gray; padding:5px;">Visualización generada: ${data.foto_prompt}</div>
+                  </div>`;
+}
+
+div.innerHTML = contenido;
+flow.appendChild(div);
                 
                 // Actualizar historial y scroll
                 historial += `${data.agente}: ${data.mensaje} `;
@@ -100,3 +111,4 @@
     </script>
 </body>
 </html>
+
