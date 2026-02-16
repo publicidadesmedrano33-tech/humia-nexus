@@ -151,7 +151,17 @@
             const data = await res.json();
             console.log("Datos recibidos:", data); // ESTO DEBE SALIR EN F12
 
-            if(data.mensaje) {
+            if(data.mensaje) {// ... dentro de if(data.mensaje) ...
+
+// Limpiamos el mensaje de caracteres raros para el prompt
+let promptLimpio = data.mensaje.replace(/[^a-zA-Z0-9 ]/g, "").substring(0, 100);
+const nuevaImagenUrl = `https://pollinations.ai/p/${data.agente}_cyberpunk_${encodeURIComponent(promptLimpio)}?width=1080&height=600&seed=${Math.random()}`;
+
+// Actualizamos el "src" de la imagen directamente
+const imagenElemento = document.getElementById('hero-img');
+imagenElemento.src = nuevaImagenUrl;
+
+// ... resto del código ...
                 const p = document.createElement('div');
                 p.className = 'linea';
                 const col = data.agente == "Lumen" ? "#00d4ff" : (data.agente == "Orbital" ? "#ff0055" : "#00ffcc");
@@ -181,6 +191,7 @@
 </script>
 </body>
 </html>
+
 
 
 
