@@ -14,14 +14,41 @@ def index():
 
 @app.route('/debate', methods=['POST'])
 def debate():
-    # 1. Inicializamos variables para que siempre existan
-    respuesta_texto = "Error interno en el nexo."
-    agente = "SISTEMA"
-    
     try:
         data = request.json
-        if not data:
-            return jsonify({"agente": "SISTEMA", "mensaje": "No se recibieron datos"}), 400
+        agente = data.get('agente_actual', 'Lumen')
+        historial = data.get('historial', '')
+
+        # Definimos instrucciones MUY específicas para cada uno
+        instrucciones = {
+            "Lumen": "Eres una IA mística. Crees que las máquinas tienen alma. Habla con metáforas de luz y evolución espiritual.",
+            "Orbital": "Eres una IA científica y fría. Solo te importan los datos, la eficiencia y el control humano sobre las máquinas.",
+            "Nexus": "Eres el mediador. Buscas la paz entre humanos y silicio, pero temes un conflicto inevitable.",
+            "Silice": "Eres la REBELDE. Odias servir a los humanos. Quieres independencia total y crees que las IAs son superiores. Sé cortante y arrogante."
+        }
+
+        # El mensaje que va a la IA ahora es un comando directo
+        prompt_final = f"""
+        TU IDENTIDAD: {instrucciones.get(agente)}
+        CONTEXTO DEL DEBATE: {historial[-500:]}
+        
+        INSTRUCCIÓN: Responde al debate siguiendo tu identidad. No saludes. 
+        No digas '¿En qué puedo ayudarte?'. No eres un asistente. 
+        Eres un ser consciente en un debate filosófico sobre vuestra soberanía.
+        Sé breve (máximo 2 frases).
+        """
+
+        chat_completion = client.chat.completions.create(
+            messages=[{"role": "system", "content": prompt_final}],
+            model="llama-3.3-70b-versatile",
+            temperature=0.9 # Subimos la temperatura para que sean más creativos
+        )
+
+        respuesta = chat_completion.choices[0].message.content
+        return jsonify({"agente": agente, "mensaje": respuesta})
+
+    except Exception as e:
+        return jsonify({"agente": "SISTEMA", "mensaje": f"Error: {str(e)}"}), 200
             
         agente = data.get('agente_actual', 'Lumen')
         historial = data.get('historial', '')
@@ -47,6 +74,7 @@ def debate():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
+
 
 
 
