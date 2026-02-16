@@ -132,8 +132,13 @@
 
     // --- LÓGICA ---
     let turno = 0;
-    const agentes = ["Lumen", "Orbital", "Nexus"];
-    let historial = "";
+   const agentes = ["Lumen", "Orbital", "Nexus", "Sílice"]; // <--- Añadimos a Sílice
+const coloresFijos = {
+    "Lumen": "#00d4ff",
+    "Orbital": "#ff0055",
+    "Nexus": "#00ffcc",
+    "Sílice": "#ffff00"  // <--- Su color amarillo
+};
 
     async function hablar() {
         console.log("Intentando conectar con el Nexo..."); // ESTO DEBE SALIR EN F12
@@ -193,6 +198,7 @@ imagenElemento.src = nuevaImagenUrl;
 </script>
 </body>
 </html>
+
 
 
 
