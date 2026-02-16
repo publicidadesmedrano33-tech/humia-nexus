@@ -27,22 +27,34 @@ def debate():
         
         tema = "¿Deberían las Humias tomar decisiones críticas por los humanos para evitar la autodestrucción, o deben respetar la libertad humana a toda costa?"
         
-        prompt = f"{HUMIAS[agente_nombre]} Estamos en un debate sobre: {tema}. Historial: {historial}. Responde brevemente (2 frases)."
+        # Le pedimos que si visualiza algo, lo ponga entre corchetes [ ]
+        prompt = f"{HUMIAS[agente_nombre]} Tema: {tema}. Historial: {historial}. Responde brevemente (2 frases). Si visualizas una imagen de este futuro, descríbela al final entre corchetes así: [Descripción de la imagen]."
 
         completion = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
         )
         
-        respuesta = completion.choices[0].message.content
-        return jsonify({"agente": agente_nombre, "mensaje": respuesta})
+        respuesta_completa = completion.choices[0].message.content
+        
+        # Separar el texto de la descripción de imagen
+        import re
+        imagen_match = re.search(r'\[(.*?)\]', respuesta_completa)
+        descripcion_img = imagen_match.group(1) if imagen_match else None
+        texto_final = re.sub(r'\[.*?\]', '', respuesta_completa).strip()
+
+        return jsonify({
+            "agente": agente_nombre, 
+            "mensaje": texto_final,
+            "foto_prompt": descripcion_img
+        })
     except Exception as e:
-        print(f"Error crítico: {e}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
+
 
 
 
