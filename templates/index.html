@@ -4,124 +4,83 @@
     <meta charset="UTF-8">
     <title>NEXO HUMIA - DASHBOARD CENTRAL</title>
     <style>
-        :root {
-            --neon-blue: #00d4ff;
-            --bg-dark: #00050a;
-            --panel-bg: rgba(0, 20, 35, 0.9);
-            --border: 1px solid rgba(0, 212, 255, 0.3);
+        // --- EFECTO MATRIX ---
+const canvas = document.getElementById('canvas-matrix');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth; 
+canvas.height = window.innerHeight;
+const drops = Array(Math.floor(canvas.width/16)).fill(1);
+
+function drawMatrix() {
+    ctx.fillStyle = "rgba(0, 5, 10, 0.1)"; 
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = "#004466"; 
+    ctx.font = "15px monospace";
+    drops.forEach((y, i) => {
+        ctx.fillText(Math.floor(Math.random()*2), i*16, y*16);
+        if(y*16 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+    });
+}
+setInterval(drawMatrix, 50);
+
+// --- LÓGICA DE DEBATE ---
+let turno = 0;
+const agentes = ["Lumen", "Orbital", "Nexus"];
+let historial = "";
+
+const coloresFijos = {
+    "Lumen": "#00d4ff",   
+    "Orbital": "#ff0055", 
+    "Nexus": "#00ffcc"    
+};
+
+function obtenerColorAgente(nombre) {
+    return coloresFijos[nombre] || "#" + Math.floor(Math.random()*16777215).toString(16);
+}
+
+async function siguienteTurno() {
+    const footer = document.getElementById('debate-footer');
+    const agenteActual = agentes[turno];
+    
+    try {
+        const res = await fetch('/debate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ agente_actual: agenteActual, historial: historial })
+        });
+        
+        const data = await res.json();
+        
+        if (data.mensaje) {
+            const color = obtenerColorAgente(data.agente);
+            const p = document.createElement('div');
+            p.className = 'linea-debate';
+            
+            // Si hay conclusión, le damos un estilo extra
+            let mensajeLimpio = data.mensaje;
+            if(mensajeLimpio.includes("CONCLUSIÓN:")) {
+                mensajeLimpio = mensajeLimpio.replace("CONCLUSIÓN:", '<b style="color:#fff; background:rgba(0,255,204,0.3); padding:2px 5px; border-radius:3px;">SABIDURÍA:</b>');
+            }
+
+            p.innerHTML = `<span style="color: ${color}; font-weight: bold;">${data.agente}:</span> ${mensajeLimpio}`;
+            
+            footer.appendChild(p);
+            footer.scrollTop = footer.scrollHeight;
+            
+            historial += `${data.agente}: ${data.mensaje} `;
+            turno = (turno + 1) % agentes.length;
         }
+    } catch (e) { 
+        console.error("Error en el Nexo:", e); 
+    }
+    
+    // Esperar 8 segundos para el siguiente turno
+    setTimeout(siguienteTurno, 8000);
+}
 
-        body {
-            background: var(--bg-dark);
-            color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            display: grid;
-            grid-template-columns: 350px 1fr 300px; /* Tres columnas como tu esquema */
-            grid-template-rows: 80px 1fr 250px; /* Header, Main, Footer-Debate */
-            height: 100vh;
-            gap: 10px;
-            padding: 10px;
-            box-sizing: border-box;
-        }
-
-        /* LLUVIA MATRIX DETRÁS */
-        #canvas-matrix {
-            position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.2;
-        }
-
-        /* CABECERA */
-        header {
-            grid-column: 1 / -1;
-            background: var(--panel-bg);
-            border: var(--border);
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            justify-content: space-between;
-        }
-
-        /* PANEL IZQUIERDO: PERFILES */
-        #perfiles-agentes {
-            grid-row: 2 / 3;
-            background: var(--panel-bg);
-            border: var(--border);
-            padding: 15px;
-            overflow-y: auto;
-        }
-
-        .card-agente {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            padding: 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .avatar {
-            width: 60px; height: 60px;
-            border-radius: 50%;
-            border: 2px solid var(--neon-blue);
-            background: #000;
-        }
-
-        /* PANEL CENTRAL: IMAGEN GRANDE Y MANIFESTACIÓN */
-        main {
-            grid-row: 2 / 3;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        #hero-vision {
-            flex: 1;
-            background: #000;
-            border: var(--border);
-            position: relative;
-            overflow: hidden;
-        }
-
-        #hero-vision img { width: 100%; height: 100%; object-fit: cover; }
-
-        /* PANEL DERECHO: MULTIMEDIA/VIDEOS */
-        #media-lateral {
-            grid-row: 2 / 3;
-            background: var(--panel-bg);
-            border: var(--border);
-            padding: 10px;
-        }
-
-        .video-placeholder {
-            width: 100%; height: 150px;
-            background: #000;
-            border: 1px solid var(--neon-blue);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-        }
-
-        /* PANEL INFERIOR: EL DEBATE (CHAT) */
-        #debate-footer {
-            grid-column: 1 / -1;
-            background: rgba(0, 10, 20, 0.95);
-            border: var(--border);
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-            overflow-y: auto;
-        }
-
-        .linea-debate {
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
-            margin-bottom: 5px;
-            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
-        }
-
-        .nombre-tag { color: var(--neon-blue); font-weight: bold; }
+// Iniciar el ciclo
+siguienteTurno();
     </style>
 </head>
 <body>
@@ -232,5 +191,6 @@
     </script>
 </body>
 </html>
+
 
 
