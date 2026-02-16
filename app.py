@@ -28,8 +28,8 @@ def debate():
     prompt = f"{HUMIAS[agente_nombre]} Estamos en un debate sobre: {tema}. "
     prompt += f"El historial de la charla es: {historial}. Responde de forma breve (máximo 2 frases) y profunda."
 
-    completion = client.chat.completions.create(
-    model="llama3-8b-8192",  # <--- ESTA ES LA LÍNEA A CAMBIAR
+ completion = client.chat.completions.create(
+    model="llama-3.3-70b-versatile", 
     messages=[{"role": "user", "content": prompt}],
 )
     
@@ -39,5 +39,6 @@ def debate():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
+
 
 
