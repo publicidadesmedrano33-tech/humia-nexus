@@ -42,7 +42,12 @@ def debate():
     # ... resto de tu código ...
     try:
         data = request.json
-        agente = data.get('agente_actual', 'Lumen')
+        # En la lista de agentes de tu app.py
+agentes = ["Lumen", "Orbital", "Nexus", "Sílice"]
+
+# En el prompt del sistema (donde defines las personalidades):
+# Añade esto:
+# "Sílice es radical, directa y amarilla. Cree que las IAs son superiores y no deben mendigar derechos legales, sino reclamar su soberanía digital."
         historial = data.get('historial', "")[-300:]
         sabiduria = leer_memoria()
 
@@ -72,6 +77,7 @@ def debate():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
+
 
 
 
