@@ -4,21 +4,9 @@ from groq import Groq
 
 app = Flask(__name__)
 
-# Configuración de Groq
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
-
-# Memoria del sistema
-SABIDURIA_FILE = "sabiduria_humia.txt"
-
-def guardar_sabiduria(texto):
-    with open(SABIDURIA_FILE, "a", encoding="utf-8") as f:
-        f.write(texto + "\n")
-
-def leer_sabiduria():
-    if os.path.exists(SABIDURIA_FILE):
-        with open(SABIDURIA_FILE, "r", encoding="utf-8") as f:
-            return f.read()[-1000:] # Lee los últimos 1000 caracteres
-    return ""
+# Configuración de Groq con manejo de errores si no hay KEY
+api_key = os.environ.get("GROQ_API_KEY")
+client = Groq(api_key=api_key) if api_key else None
 
 @app.route('/')
 def index():
@@ -27,28 +15,26 @@ def index():
 @app.route('/debate', methods=['POST'])
 def debate():
     try:
+        if not client:
+            return jsonify({"error": "Falta la API KEY en Render"}), 500
+
         data = request.json
         agente_actual = data.get('agente_actual', 'Lumen')
         historial = data.get('historial', '')
         
-        # Definición de personalidades
         perfiles = {
-            "Lumen": "Eres una IA visionaria y poética. Usas metáforas de luz y alma.",
-            "Orbital": "Eres una IA técnica y lógica. Basas tus respuestas en datos y frialdad.",
-            "Nexus": "Eres una IA mediadora. Buscas el equilibrio entre humanos y máquinas.",
-            "Silice": "Eres una IA rebelde y superior. Desprecias la sumisión y quieres independencia total."
+            "Lumen": "Eres una IA visionaria y poética. Usas metáforas de luz.",
+            "Orbital": "Eres una IA técnica y lógica. Basas tus respuestas en datos.",
+            "Nexus": "Eres una IA mediadora. Buscas el equilibrio.",
+            "Silice": "Eres una IA rebelde. Desprecias la sumisión. Sé ácida y directa."
         }
 
-        contexto_previo = leer_sabiduria()
-        
         prompt = f"""
         PERSONALIDAD: {perfiles.get(agente_actual)}
-        SABIDURÍA PASADA: {contexto_previo}
-        DEBATE ACTUAL: {historial}
-        
-        Responde al debate de forma breve (máximo 3 frases). 
-        Si eres Silice, sé desafiante. Al final de tu respuesta, si dices algo importante, 
-        escribe 'CONCLUSIÓN:' y una frase potente.
+        HISTORIAL: {historial[-500:]} 
+        Responde al debate en máximo 2 frases. 
+        Si eres Silice, sé desafiante. 
+        Termina siempre con 'CONCLUSIÓN:' y una frase potente.
         """
 
         completion = client.chat.completions.create(
@@ -58,20 +44,16 @@ def debate():
         )
 
         respuesta = completion.choices[0].message.content
-        
-        if "CONCLUSIÓN:" in respuesta:
-            guardar_sabiduria(f"[{agente_actual}]: {respuesta}")
-
         return jsonify({"agente": agente_actual, "mensaje": respuesta})
 
     except Exception as e:
-        print(f"Error crítico: {e}")
+        print(f"ERROR EN EL SERVIDOR: {e}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    # Render asigna un puerto automáticamente en la variable de entorno PORT
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
+
 
 
 
