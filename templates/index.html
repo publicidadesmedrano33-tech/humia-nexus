@@ -131,12 +131,20 @@
     }
     setInterval(matrix, 50);
 
-    // --- LÓGICA ---
-    let turno = 0;
-   const agentes = ["Lumen", "Orbital", "Nexus", "Sílice"];
-let turno = 0;
-const agentes = ["Lumen", "Orbital", "Nexus", "Silice"];
-let historial = "";
+  <script>
+    // --- VARIABLES GLOBALES (Solo una declaración de cada una) ---
+    let turno = 0; 
+    let historial = "";
+    const agentes = ["Lumen", "Orbital", "Nexus", "Silice"];
+    const coloresFijos = {
+        "Lumen": "#00d4ff",
+        "Orbital": "#ff0055",
+        "Nexus": "#00ffcc",
+        "Silice": "#ffff00"
+    };
+
+    // ... después vienen las funciones hablar(), matrix(), etc. ...
+</script>
 
 // Solo una vez, y usa 'const'
 const coloresFijos = {
@@ -225,6 +233,7 @@ imagenElemento.src = nuevaImagenUrl;
 </script>
 </body>
 </html>
+
 
 
 
