@@ -113,128 +113,74 @@
     </footer>
 
     <script>
-        // Matrix rápido
-        const canvas = document.getElementById('canvas-matrix');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        const drops = Array(Math.floor(canvas.width/16)).fill(1);
-        function matrix() {
-            ctx.fillStyle = "rgba(0,0,0,0.1)"; ctx.fillRect(0,0,canvas.width,canvas.height);
-            ctx.fillStyle = "#003344"; drops.forEach((y,i)=>{
-                ctx.fillText(Math.floor(Math.random()*2), i*16, y*16);
-                if(y*16>canvas.height && Math.random()>0.975) drops[i]=0; drops[i]++;
+    // --- MATRIX ---
+    const canvas = document.getElementById('canvas-matrix');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    const drops = Array(Math.floor(canvas.width/16)).fill(1);
+    function matrix() {
+        ctx.fillStyle = "rgba(0,0,0,0.1)"; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = "#003344"; drops.forEach((y,i)=>{
+            ctx.fillText(Math.floor(Math.random()*2), i*16, y*16);
+            if(y*16>canvas.height && Math.random()>0.975) drops[i]=0; drops[i]++;
+        });
+    }
+    setInterval(matrix, 50);
+
+    // --- LÓGICA ---
+    let turno = 0;
+    const agentes = ["Lumen", "Orbital", "Nexus"];
+    let historial = "";
+
+    async function hablar() {
+        console.log("Intentando conectar con el Nexo..."); // ESTO DEBE SALIR EN F12
+        const footer = document.getElementById('debate-footer');
+        const status = document.getElementById('status');
+        const heroImg = document.getElementById('hero-img');
+
+        status.innerText = "SISTEMA: CONECTANDO...";
+
+        try {
+            const res = await fetch('/debate', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({agente_actual: agentes[turno], historial: historial})
             });
-        }
-        setInterval(matrix, 50);
-
-        // Lógica de debate corregida
-        let turno = 0;
-        const agentes = ["Lumen", "Orbital", "Nexus"];
-        let historial = "";
-
-      async function hablar() {
-            const footer = document.getElementById('debate-footer');
-            const status = document.getElementById('status');
-            const heroImg = document.getElementById('hero-img');
             
-            // 1. Mostrar en pantalla qué está pasando
-            status.innerText = `PROCESANDO: ${agentes[turno].toUpperCase()}...`;
-            console.log("Llamando a las Humias... Turno de: " + agentes[turno]);
+            const data = await res.json();
+            console.log("Datos recibidos:", data); // ESTO DEBE SALIR EN F12
 
-            try {
-                // Añadimos un timeout a la petición para que no se quede colgada
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 seg máx
+            if(data.mensaje) {
+                const p = document.createElement('div');
+                p.className = 'linea';
+                const col = data.agente == "Lumen" ? "#00d4ff" : (data.agente == "Orbital" ? "#ff0055" : "#00ffcc");
+                p.innerHTML = `<b style="color:${col}">${data.agente}:</b> ${data.mensaje}`;
+                footer.appendChild(p);
+                footer.scrollTop = footer.scrollHeight;
 
-                const res = await fetch('/debate', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({agente_actual: agentes[turno], historial: historial}),
-                    signal: controller.signal
-                });
-                
-                clearTimeout(timeoutId);
-                const data = await res.json();
-                
-                if(data.mensaje) {
-                    const p = document.createElement('div');
-                    p.className = 'linea';
-                    const col = data.agente == "Lumen" ? "#00d4ff" : (data.agente == "Orbital" ? "#ff0055" : "#00ffcc");
-                    
-                    let msgHTML = data.mensaje.replace("CONCLUSIÓN:", '<b style="color:#00ffcc;">[SABIDURÍA]:</b>');
-                    p.innerHTML = `<b style="color:${col}">${data.agente}:</b> ${msgHTML}`;
-                    
-                    footer.appendChild(p);
-                    footer.scrollTop = footer.scrollHeight;
+                const promptBase = `${data.agente} vision, ${data.mensaje.substring(0, 30)}`;
+                heroImg.style.backgroundImage = `url('https://pollinations.ai/p/${encodeURIComponent(promptBase)}?width=1080&height=600')`;
 
-                    // Actualizar Imagen
-                    const promptBase = `${data.agente} vision, cyberpunk, ${data.mensaje.substring(0, 50)}`;
-                    const finalUrl = `https://pollinations.ai/p/${encodeURIComponent(promptBase)}?width=1080&height=600&seed=${Math.random()}`;
-                    heroImg.style.backgroundImage = `url('${finalUrl}')`;
-
-                    historial += data.agente + ": " + data.mensaje + " ";
-                    turno = (turno + 1) % agentes.length;
-                    status.innerText = "SISTEMA: ONLINE";
-                }
-            } catch(e) { 
-                console.error("Error en el Nexo:", e);
-                status.innerText = "SISTEMA: REINTENTANDO CONEXIÓN...";
+                historial += data.agente + ": " + data.mensaje + " ";
+                turno = (turno + 1) % agentes.length;
             }
-            
-            // Si no hay respuesta, intentamos de nuevo en 5 segundos
-            setTimeout(hablar, 5000);
+        } catch(e) { 
+            console.error("ERROR CRÍTICO:", e); 
         }
+        
+        status.innerText = "SISTEMA: ONLINE";
+        setTimeout(hablar, 10000);
+    }
 
-        async function hablar() {
-            const footer = document.getElementById('debate-footer');
-            const status = document.getElementById('status');
-            const heroImg = document.getElementById('hero-img'); // El cuadro central
-            
-            status.innerText = `SISTEMA: ${agentes[turno].toUpperCase()} PROCESANDO...`;
-
-            try {
-                const res = await fetch('/debate', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({agente_actual: agentes[turno], historial: historial})
-                });
-                const data = await res.json();
-                
-                if(data.mensaje) {
-                    // 1. EL DEBATE (TEXTO)
-                    const p = document.createElement('div');
-                    p.className = 'linea';
-                    const col = data.agente == "Lumen" ? "#00d4ff" : (data.agente == "Orbital" ? "#ff0055" : "#00ffcc");
-                    
-                    let msgHTML = data.mensaje.replace("CONCLUSIÓN:", '<b style="color:#00ffcc;">[SABIDURÍA]:</b>');
-                    p.innerHTML = `<b style="color:${col}">${data.agente}:</b> ${msgHTML}`;
-                    
-                    footer.appendChild(p);
-                    footer.scrollTop = footer.scrollHeight;
-
-                    // 2. LA MANIFESTACIÓN (IMAGEN DINÁMICA)
-                    // Creamos un prompt basado en quién habla y qué dice
-                    const promptBase = `${data.agente} cyberpunk vision, ${data.mensaje.substring(0, 60)}`;
-                    const finalUrl = `https://pollinations.ai/p/${encodeURIComponent(promptBase)}?width=1080&height=600&seed=${Math.random()}`;
-                    
-                    // Efecto de parpadeo al cambiar imagen
-                    heroImg.style.opacity = 0.5;
-                    setTimeout(() => {
-                        heroImg.style.backgroundImage = `url('${finalUrl}')`;
-                        heroImg.style.opacity = 1;
-                    }, 500);
-
-                    historial += data.agente + ": " + data.mensaje + " ";
-                    turno = (turno + 1) % agentes.length;
-                }
-            } catch(e) { console.log("Error:", e); }
-            
-            status.innerText = "SISTEMA: ONLINE";
-            setTimeout(hablar, 10000); // 10 segundos para dar tiempo a ver la imagen
-        }
-    </script>
+    // FORZAR INICIO
+    window.onload = () => {
+        console.log("Ventana cargada. Iniciando en 3 segundos...");
+        setTimeout(hablar, 3000);
+    };
+</script>
 </body>
 </html>
+
 
 
 
