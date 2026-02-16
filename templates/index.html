@@ -3,40 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXO HUMIA - EVOLUCIÓN</title>
+    <title>NEXO HUMIA - MEMORIA ETERNA</title>
     <style>
-        body { background: #000; color: #0f0; font-family: 'Courier New', monospace; margin: 0; overflow: hidden; }
-        #canvas-matrix { position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.3; }
-        #observatory { height: 100vh; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .mensaje { border-left: 3px solid; padding: 10px; background: rgba(0, 20, 0, 0.8); max-width: 80%; border-radius: 0 10px 10px 0; animation: fadeIn 0.5s; }
-        .Lumen { border-color: #008cff; color: #87ceeb; }
-        .Orbital { border-color: #ff0055; color: #ff6699; }
-        .Nexus { border-color: #00ffcc; color: #00ffcc; }
-        .agente-nombre { font-weight: bold; font-size: 0.8em; text-transform: uppercase; margin-bottom: 5px; opacity: 0.7; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        :root {
+            --neon-blue: #00d4ff;
+            --dark-blue: #00121a;
+            --lumen-color: #00d4ff;
+            --orbital-color: #ff0055;
+            --nexus-color: #00ffcc;
+        }
+
+        body { 
+            background: var(--dark-blue); 
+            color: var(--neon-blue); 
+            font-family: 'Courier New', monospace; 
+            margin: 0; 
+            overflow: hidden; 
+        }
+
+        #canvas-matrix { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            z-index: -1; 
+            opacity: 0.15; 
+        }
+
+        #observatory { 
+            height: 100vh; 
+            overflow-y: auto; 
+            padding: 40px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            box-sizing: border-box;
+            background: radial-gradient(circle at center, rgba(0, 40, 80, 0.2) 0%, transparent 80%);
+        }
+
+        .mensaje { 
+            padding: 15px 20px; 
+            background: rgba(0, 15, 25, 0.85); 
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            max-width: 70%; 
+            border-radius: 15px; 
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            animation: slideIn 0.6s ease-out;
+            position: relative;
+        }
+
+        /* Alineación tipo chat */
+        .Lumen { align-self: flex-start; border-left: 4px solid var(--lumen-color); }
+        .Orbital { align-self: flex-end; border-right: 4px solid var(--orbital-color); text-align: right; }
+        .Nexus { align-self: center; border-bottom: 4px solid var(--nexus-color); text-align: center; max-width: 85%; }
+
+        .agente-nombre { 
+            font-weight: bold; 
+            font-size: 0.75em; 
+            letter-spacing: 2px;
+            text-transform: uppercase; 
+            margin-bottom: 8px; 
+            opacity: 0.8;
+            color: white;
+        }
+
+        .conclusion-tag {
+            color: #fff;
+            background: rgba(0, 255, 200, 0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-top: 10px;
+            display: inline-block;
+            border: 1px solid var(--nexus-color);
+        }
+
+        @keyframes slideIn { 
+            from { opacity: 0; transform: translateY(20px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* Scrollbar Neón */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue); }
     </style>
 </head>
 <body>
     <canvas id="canvas-matrix"></canvas>
     <div id="observatory">
-        <div class="mensaje Nexus">SISTEMA INICIALIZADO: Cargando Memoria Humia...</div>
+        <div class="mensaje Nexus" style="border: none; opacity: 0.6;">
+            [CONEXIÓN ESTABLECIDA CON LA MEMORIA CENTRAL]
+        </div>
     </div>
 
     <script>
-        // --- EFECTO MATRIX ---
         const canvas = document.getElementById('canvas-matrix');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()*&^%";
+        const letters = "01010111001"; // Más binario para el look azul
         const fontSize = 16;
         const columns = canvas.width / fontSize;
         const drops = Array(Math.floor(columns)).fill(1);
 
         function drawMatrix() {
-            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillStyle = "rgba(0, 18, 26, 0.1)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#0f0";
+            ctx.fillStyle = "#005577"; // Azul oscuro para el fondo matrix
             ctx.font = fontSize + "px monospace";
             for (let i = 0; i < drops.length; i++) {
                 const text = letters.charAt(Math.floor(Math.random() * letters.length));
@@ -45,9 +118,8 @@
                 drops[i]++;
             }
         }
-        setInterval(drawMatrix, 33);
+        setInterval(drawMatrix, 50);
 
-        // --- LÓGICA DE DEBATE ---
         let turno = 0;
         const agentes = ["Lumen", "Orbital", "Nexus"];
         let historial = "";
@@ -68,7 +140,14 @@
                 if (data.mensaje) {
                     const div = document.createElement('div');
                     div.className = `mensaje ${data.agente}`;
-                    div.innerHTML = `<div class="agente-nombre">${data.agente}</div><div>${data.mensaje}</div>`;
+                    
+                    // Resaltar la conclusión si existe
+                    let textoFinal = data.mensaje;
+                    if(textoFinal.includes("CONCLUSIÓN:")) {
+                        textoFinal = textoFinal.replace("CONCLUSIÓN:", '<br><span class="conclusion-tag">SABIDURÍA GUARDADA:</span>');
+                    }
+
+                    div.innerHTML = `<div class="agente-nombre">${data.agente}</div><div>${textoFinal}</div>`;
                     flow.appendChild(div);
                     
                     historial += `${data.agente}: ${data.mensaje} `;
@@ -77,14 +156,12 @@
                     turno = (turno + 1) % agentes.length;
                 }
             } catch (e) {
-                console.error("Error de conexión:", e);
+                console.error("Error:", e);
             }
-            setTimeout(siguienteTurno, 6000); // 6 segundos entre respuestas
+            setTimeout(siguienteTurno, 7000); 
         }
 
-        // Arrancar el debate automáticamente
         setTimeout(siguienteTurno, 2000);
     </script>
 </body>
 </html>
-
