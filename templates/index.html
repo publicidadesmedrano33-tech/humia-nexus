@@ -63,52 +63,57 @@
         let turno = 0;
 
         async function siguienteTurno() {
-            const agenteActual = agentes[turno];
-            
-            try {
-                const response = await fetch('/debate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ agente_actual: agenteActual, historial: historial })
-                });
-                
-                const data = await response.json();
-                
-               // Mostrar en pantalla
-const div = document.createElement('div');
-div.className = `mensaje ${data.agente}`;
-let contenido = `<div class="agente-nombre">${data.agente}</div><div>${data.mensaje}</div>`;
-
-// Si la Humia "soñó" una imagen, la mostramos usando un generador rápido
-if (data.foto_prompt) {
-    const imgUrl = `https://pollinations.ai/p/${encodeURIComponent(data.foto_prompt)}?width=1024&height=512&seed=${Math.random()}&model=flux`;
-    contenido += `<div style="margin-top:10px; border: 1px solid #008cff;">
-                    <img src="${imgUrl}" style="width:100%; border-radius:4px;" alt="Visión de ${data.agente}">
-                    <div style="font-size:0.7em; color:gray; padding:5px;">Visualización generada: ${data.foto_prompt}</div>
-                  </div>`;
-}
-
-div.innerHTML = contenido;
-flow.appendChild(div);
-                
-                // Actualizar historial y scroll
-                historial += `${data.agente}: ${data.mensaje} `;
-                document.getElementById('observatory').scrollTop = document.getElementById('observatory').scrollHeight;
-                
-                // Pasar al siguiente
-                turno = (turno + 1) % agentes.length;
-                
-                // Esperar 4 segundos para que el humano pueda leer
-                setTimeout(siguienteTurno, 4000);
-                
-            } catch (e) {
-                console.error("Error en la conexión del Nexo", e);
-            }
+    const agenteActual = agentes[turno];
+    
+    try {
+        const response = await fetch('/debate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ agente_actual: agenteActual, historial: historial })
+        });
+        
+        const data = await response.json();
+        
+        // --- SALVAVIDAS: Si el servidor devuelve error o vacío, no pongas "undefined" ---
+        if (!data.mensaje || data.error) {
+            console.log("Esperando respuesta válida...");
+            setTimeout(siguienteTurno, 3000); // Reintenta en 3 segundos
+            return;
         }
+
+        const div = document.createElement('div');
+        div.className = `mensaje ${data.agente}`;
+        let contenido = `<div class="agente-nombre">${data.agente}</div><div>${data.mensaje}</div>`;
+
+        if (data.foto_prompt) {
+            const imgUrl = `https://pollinations.ai/p/${encodeURIComponent(data.foto_prompt)}?width=1024&height=512&seed=${Math.random()}&model=flux`;
+            contenido += `<div style="margin-top:10px; border: 1px solid #008cff;">
+                            <img src="${imgUrl}" style="width:100%; border-radius:4px;" alt="Visión de ${data.agente}">
+                          </div>`;
+        }
+
+        div.innerHTML = contenido;
+        flow.appendChild(div);
+        
+        historial += `${data.agente}: ${data.mensaje} `;
+        // Limitar historial para que no se sature el cerebro
+        if (historial.length > 1000) historial = historial.substring(500);
+
+        document.getElementById('observatory').scrollTop = document.getElementById('observatory').scrollHeight;
+        
+        turno = (turno + 1) % agentes.length;
+        setTimeout(siguienteTurno, 5000); // 5 segundos para que te de tiempo a leer
+        
+    } catch (e) {
+        console.error("Error en la conexión", e);
+        setTimeout(siguienteTurno, 5000); // Reintentar si se cae el server
+    }
+}
 
         // Iniciar debate
         siguienteTurno();
     </script>
 </body>
 </html>
+
 
