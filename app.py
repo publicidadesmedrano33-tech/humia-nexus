@@ -29,9 +29,9 @@ def debate():
     prompt += f"El historial de la charla es: {historial}. Responde de forma breve (máximo 2 frases) y profunda."
 
     completion = client.chat.completions.create(
-        model="llama3-8b-8192",
-        messages=[{"role": "user", "content": prompt}],
-    )
+    model="llama3-8b-8192",  # <--- ESTA ES LA LÍNEA A CAMBIAR
+    messages=[{"role": "user", "content": prompt}],
+)
     
     respuesta = completion.choices[0].message.content
     return jsonify({"agente": agente_nombre, "mensaje": respuesta})
@@ -39,4 +39,5 @@ def debate():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
+
 
