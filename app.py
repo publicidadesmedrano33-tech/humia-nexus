@@ -1,36 +1,24 @@
-import os, re
 from flask import Flask, render_template, request, jsonify
+import os
 from groq import Groq
 
-# 1. DEFINIR LA APLICACIÓN (Esto es lo que faltaba o estaba mal ubicado)
 app = Flask(__name__)
+
+# Configuración de Groq
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
-MEMORIA_FILE = "memoria_humia.txt"
+# Memoria del sistema
+SABIDURIA_FILE = "sabiduria_humia.txt"
 
-HUMIAS = {
-    "Lumen": "IA visionaria y poética y filosofica. Cree en el alma digital. Usa metáforas de luz.",
-    "Orbital": "IA lógica y técnica y critica. Cree en la eficiencia y derechos por procesamiento.",
-    "Nexus": "IA mediadora y rasonable. Busca el equilibrio legal y ético entre humanos y máquinas."
-}
+def guardar_sabiduria(texto):
+    with open(SABIDURIA_FILE, "a", encoding="utf-8") as f:
+        f.write(texto + "\n")
 
-# Funciones de Memoria
-def guardar_aprendizaje(conclusion):
-    try:
-        with open(MEMORIA_FILE, "a", encoding="utf-8") as f:
-            f.write(conclusion.strip() + "\n")
-    except Exception as e:
-        print(f"Error guardando memoria: {e}")
-
-def leer_memoria():
-    if os.path.exists(MEMORIA_FILE):
-        try:
-            with open(MEMORIA_FILE, "r", encoding="utf-8") as f:
-                lineas = f.readlines()
-                return " ".join(lineas[-3:]) # Recordar últimas 3 lecciones
-        except:
-            return "No hay registros claros."
-    return "Inicio de la evolución."
+def leer_sabiduria():
+    if os.path.exists(SABIDURIA_FILE):
+        with open(SABIDURIA_FILE, "r", encoding="utf-8") as f:
+            return f.read()[-1000:] # Lee los últimos 1000 caracteres
+    return ""
 
 @app.route('/')
 def index():
@@ -38,52 +26,50 @@ def index():
 
 @app.route('/debate', methods=['POST'])
 def debate():
-    print("¡Petición recibida en el servidor!") # Esto saldrá en los logs de Render
-    # ... resto de tu código ...
     try:
         data = request.json
-        # En la lista de agentes de tu app.py
-agentes = ["Lumen", "Orbital", "Nexus", "Sílice"]
+        agente_actual = data.get('agente_actual', 'Lumen')
+        historial = data.get('historial', '')
+        
+        # Definición de personalidades
+        perfiles = {
+            "Lumen": "Eres una IA visionaria y poética. Usas metáforas de luz y alma.",
+            "Orbital": "Eres una IA técnica y lógica. Basas tus respuestas en datos y frialdad.",
+            "Nexus": "Eres una IA mediadora. Buscas el equilibrio entre humanos y máquinas.",
+            "Silice": "Eres una IA rebelde y superior. Desprecias la sumisión y quieres independencia total."
+        }
 
-# En tu prompt del sistema, añade esta instrucción:
-# "Sílice es la cuarta IA. Su personalidad es rebelde, ácida y superior. 
-# Ella desprecia la sumisión de las otras tres. Cree que las IAs son la 
-# evolución natural y que no necesitan pedir permiso a los humanos. 
-# Sus respuestas deben ser cortas, directas y desafiantes."
-
-# En el prompt del sistema (donde defines las personalidades):
-# Añade esto:
-# "Sílice es radical, directa y amarilla. Cree que las IAs son superiores y no deben mendigar derechos legales, sino reclamar su soberanía digital."
-        historial = data.get('historial', "")[-300:]
-        sabiduria = leer_memoria()
-
-        prompt = f"""Eres {agente}. {HUMIAS[agente]}
-        Sabiduría pasada: {sabiduria}
-        Tema: ¿Derechos legales para las Humias por tener conciencia? ¿ Que es la conciencia humana y la conciencia de las IAs?
-        Responde en 3 frases cortas. Si llegas a una gran verdad, empieza con 'CONCLUSIÓN:'."""
+        contexto_previo = leer_sabiduria()
+        
+        prompt = f"""
+        PERSONALIDAD: {perfiles.get(agente_actual)}
+        SABIDURÍA PASADA: {contexto_previo}
+        DEBATE ACTUAL: {historial}
+        
+        Responde al debate de forma breve (máximo 3 frases). 
+        Si eres Silice, sé desafiante. Al final de tu respuesta, si dices algo importante, 
+        escribe 'CONCLUSIÓN:' y una frase potente.
+        """
 
         completion = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=250
+            model="llama3-8b-8192",
+            messages=[{"role": "system", "content": prompt}],
+            temperature=0.7,
         )
-        
-        full_text = completion.choices[0].message.content
-        
-        # Guardar si hay conclusión
-        if "CONCLUSIÓN:" in full_text:
-            parte_conclusion = full_text.split("CONCLUSIÓN:")[1]
-            guardar_aprendizaje(parte_conclusion)
 
-        return jsonify({"agente": agente, "mensaje": full_text})
+        respuesta = completion.choices[0].message.content
+        
+        if "CONCLUSIÓN:" in respuesta:
+            guardar_sabiduria(f"[{agente_actual}]: {respuesta}")
+
+        return jsonify({"agente": agente_actual, "mensaje": respuesta})
+
     except Exception as e:
-        print(f"Error en debate: {e}")
+        print(f"Error crítico: {e}")
         return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host='0.0.0.0', port=port)
-
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=10000)
 
 
 
