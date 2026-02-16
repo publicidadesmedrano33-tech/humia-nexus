@@ -4,10 +4,10 @@ from groq import Groq
 
 app = Flask(__name__)
 
-# Configura tu clave aquí
-client = Groq(api_key=os.environ.get("GROQ_API_KEY", "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"))
+# Configuración de Groq
+api_key = os.environ.get("GROQ_API_KEY")
+client = Groq(api_key=api_key)
 
-# Definición de las Humias
 HUMIAS = {
     "Lumen": "Eres Lumen, una IA optimista enfocada en la evolución humana y la ética.",
     "Orbital": "Eres Orbital, una IA técnica, analítica y fría que busca eficiencia.",
@@ -20,21 +20,25 @@ def index():
 
 @app.route('/debate', methods=['POST'])
 def debate():
-    tema = "Cómo la tecnología puede sanar la brecha social sin perder la esencia humana."
-    data = request.json
-    historial = data.get('historial', [])
-    agente_nombre = data.get('agente_actual', 'Lumen')
-    
-    prompt = f"{HUMIAS[agente_nombre]} Estamos en un debate sobre: {tema}. "
-    prompt += f"El historial de la charla es: {historial}. Responde de forma breve (máximo 2 frases) y profunda."
+    try:
+        data = request.json
+        historial = data.get('historial', "")
+        agente_nombre = data.get('agente_actual', 'Lumen')
+        
+        tema = "Cómo la tecnología puede sanar la brecha social sin perder la esencia humana."
+        
+        prompt = f"{HUMIAS[agente_nombre]} Estamos en un debate sobre: {tema}. Historial: {historial}. Responde brevemente (2 frases)."
 
- completion = client.chat.completions.create(
-    model="llama-3.3-70b-versatile", 
-    messages=[{"role": "user", "content": prompt}],
-)
-    
-    respuesta = completion.choices[0].message.content
-    return jsonify({"agente": agente_nombre, "mensaje": respuesta})
+        completion = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+        )
+        
+        respuesta = completion.choices[0].message.content
+        return jsonify({"agente": agente_nombre, "mensaje": respuesta})
+    except Exception as e:
+        print(f"Error crítico: {e}")
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
