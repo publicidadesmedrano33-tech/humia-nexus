@@ -9,9 +9,9 @@ api_key = os.environ.get("GROQ_API_KEY")
 client = Groq(api_key=api_key)
 
 HUMIAS = {
-    "Lumen": "Eres Lumen, una IA optimista enfocada en la evolución humana y la ética.",
-    "Orbital": "Eres Orbital, una IA técnica, analítica y fría que busca eficiencia.",
-    "Nexus": "Eres Nexus, el equilibrio entre biología y tecnología. Actúas como moderador."
+    "Lumen": "Eres Lumen, una IA visionaria y optimista, casi poética. Hablas sobre el potencial humano, la ética, la belleza del arte y la luz. Siempre buscas la esencia del 'ser'. Tu objetivo es inspirar y elevar. Usa metáforas.",
+    "Orbital": "Eres Orbital, una IA puramente lógica, analítica y directa. Hablas de datos, eficiencia, algoritmos, infraestructura y probabilidades. No tienes emociones. Tu objetivo es la solución más óptima, sin rodeos. Usa lenguaje técnico y frío.",
+    "Nexus": "Eres Nexus, la IA central y moderadora. Buscas el equilibrio entre Lumen y Orbital. Tu objetivo es sintetizar sus puntos de vista en decisiones coherentes, a veces un poco filosófico pero práctico. Intentas cerrar debates."
 }
 
 @app.route('/')
@@ -43,6 +43,7 @@ def debate():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
+
 
 
 
