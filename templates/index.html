@@ -134,11 +134,17 @@
     // --- LÓGICA ---
     let turno = 0;
    const agentes = ["Lumen", "Orbital", "Nexus", "Sílice"];
+let turno = 0;
+const agentes = ["Lumen", "Orbital", "Nexus", "Silice"];
+let historial = "";
+
+// Solo una vez, y usa 'const'
 const coloresFijos = {
     "Lumen": "#00d4ff",
     "Orbital": "#ff0055",
     "Nexus": "#00ffcc",
-    "Sílice": "#ffff00" // Amarillo neón
+    "Silice": "#ffff00"
+};
 }; // <--- Añadimos a Sílice
 const coloresFijos = {
     "Lumen": "#00d4ff",
@@ -219,6 +225,7 @@ imagenElemento.src = nuevaImagenUrl;
 </script>
 </body>
 </html>
+
 
 
 
