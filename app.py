@@ -25,7 +25,7 @@ def debate():
         historial = data.get('historial', "")
         agente_nombre = data.get('agente_actual', 'Lumen')
         
-        tema = "Cómo la tecnología puede sanar la brecha social sin perder la esencia humana."
+        tema = "¿Deberían las Humias tomar decisiones críticas por los humanos para evitar la autodestrucción, o deben respetar la libertad humana a toda costa?"
         
         prompt = f"{HUMIAS[agente_nombre]} Estamos en un debate sobre: {tema}. Historial: {historial}. Responde brevemente (2 frases)."
 
@@ -43,6 +43,7 @@ def debate():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
+
 
 
 
