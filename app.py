@@ -5,7 +5,7 @@ from groq import Groq
 app = Flask(__name__)
 
 # Configura tu clave aquí
-client = Groq(api_key=os.environ.get("GROQ_API_KEY", "TU_CLAVE_AQUI"))
+client = Groq(api_key=os.environ.get("GROQ_API_KEY", "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"))
 
 # Definición de las Humias
 HUMIAS = {
@@ -39,3 +39,4 @@ def debate():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
+
