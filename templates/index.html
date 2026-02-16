@@ -166,7 +166,16 @@ const coloresFijos = {
             console.log("Datos recibidos:", data); // ESTO DEBE SALIR EN F12
 
             if(data.mensaje) {// ... dentro de if(data.mensaje) ...
+                
+const colorActual = coloresFijos[data.agente] || "#ffffff";
+const imagenElemento = document.getElementById('hero-img');
 
+// Cambiamos el borde de la imagen según quién hable
+imagenElemento.style.borderColor = colorActual;
+
+// Generamos el prompt de la imagen
+const promptIA = `${data.agente} personality, cyberpunk style, neon colors`;
+imagenElemento.src = `https://pollinations.ai/p/${encodeURIComponent(promptIA)}?width=1080&height=600&seed=${Math.random()}`;
 // Limpiamos el mensaje de caracteres raros para el prompt
 let promptLimpio = data.mensaje.replace(/[^a-zA-Z0-9 ]/g, "").substring(0, 100);
 const nuevaImagenUrl = `https://pollinations.ai/p/${data.agente}_cyberpunk_${encodeURIComponent(promptLimpio)}?width=1080&height=600&seed=${Math.random()}`;
@@ -205,6 +214,7 @@ imagenElemento.src = nuevaImagenUrl;
 </script>
 </body>
 </html>
+
 
 
 
