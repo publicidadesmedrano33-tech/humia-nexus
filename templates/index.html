@@ -167,7 +167,12 @@ const coloresFijos = {
 
             if(data.mensaje) {// ... dentro de if(data.mensaje) ...
                 
-const colorActual = coloresFijos[data.agente] || "#ffffff";
+const coloresFijos = {
+    "Lumen": "#00d4ff",
+    "Orbital": "#ff0055",
+    "Nexus": "#00ffcc",
+    "Silice": "#ffff00"  // Asegúrate de que Silice esté aquí
+};
 const imagenElemento = document.getElementById('hero-img');
 
 // Cambiamos el borde de la imagen según quién hable
@@ -214,6 +219,7 @@ imagenElemento.src = nuevaImagenUrl;
 </script>
 </body>
 </html>
+
 
 
 
