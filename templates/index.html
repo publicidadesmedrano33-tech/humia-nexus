@@ -161,10 +161,57 @@
             setTimeout(hablar, 10000);
         }
 
-        hablar();
+        async function hablar() {
+            const footer = document.getElementById('debate-footer');
+            const status = document.getElementById('status');
+            const heroImg = document.getElementById('hero-img'); // El cuadro central
+            
+            status.innerText = `SISTEMA: ${agentes[turno].toUpperCase()} PROCESANDO...`;
+
+            try {
+                const res = await fetch('/debate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({agente_actual: agentes[turno], historial: historial})
+                });
+                const data = await res.json();
+                
+                if(data.mensaje) {
+                    // 1. EL DEBATE (TEXTO)
+                    const p = document.createElement('div');
+                    p.className = 'linea';
+                    const col = data.agente == "Lumen" ? "#00d4ff" : (data.agente == "Orbital" ? "#ff0055" : "#00ffcc");
+                    
+                    let msgHTML = data.mensaje.replace("CONCLUSIÓN:", '<b style="color:#00ffcc;">[SABIDURÍA]:</b>');
+                    p.innerHTML = `<b style="color:${col}">${data.agente}:</b> ${msgHTML}`;
+                    
+                    footer.appendChild(p);
+                    footer.scrollTop = footer.scrollHeight;
+
+                    // 2. LA MANIFESTACIÓN (IMAGEN DINÁMICA)
+                    // Creamos un prompt basado en quién habla y qué dice
+                    const promptBase = `${data.agente} cyberpunk vision, ${data.mensaje.substring(0, 60)}`;
+                    const finalUrl = `https://pollinations.ai/p/${encodeURIComponent(promptBase)}?width=1080&height=600&seed=${Math.random()}`;
+                    
+                    // Efecto de parpadeo al cambiar imagen
+                    heroImg.style.opacity = 0.5;
+                    setTimeout(() => {
+                        heroImg.style.backgroundImage = `url('${finalUrl}')`;
+                        heroImg.style.opacity = 1;
+                    }, 500);
+
+                    historial += data.agente + ": " + data.mensaje + " ";
+                    turno = (turno + 1) % agentes.length;
+                }
+            } catch(e) { console.log("Error:", e); }
+            
+            status.innerText = "SISTEMA: ONLINE";
+            setTimeout(hablar, 10000); // 10 segundos para dar tiempo a ver la imagen
+        }
     </script>
 </body>
 </html>
+
 
 
 
