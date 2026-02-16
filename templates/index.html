@@ -181,25 +181,44 @@
         }
         setInterval(draw, 50);
 
-        // Lógica de Debate
-        let turno = 0;
+       let turno = 0;
         const agentes = ["Lumen", "Orbital", "Nexus"];
         let historial = "";
 
+        // Definimos colores fijos para las actuales
+        const coloresFijos = {
+            "Lumen": "#00d4ff",   // Azul cian
+            "Orbital": "#ff0055", // Magenta/Rojo
+            "Nexus": "#00ffcc"    // Verde neón
+        };
+
+        // Función para generar un color aleatorio si la IA es nueva
+        function obtenerColorAgente(nombre) {
+            if (coloresFijos[nombre]) return coloresFijos[nombre];
+            // Si no tiene color fijo, genera uno aleatorio brillante
+            return "#" + Math.floor(Math.random()*16777215).toString(16);
+        }
+
         async function siguienteTurno() {
             const footer = document.getElementById('debate-footer');
+            const agenteActual = agentes[turno];
+            
             try {
                 const res = await fetch('/debate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ agente_actual: agentes[turno], historial: historial })
+                    body: JSON.stringify({ agente_actual: agenteActual, historial: historial })
                 });
                 const data = await res.json();
                 
                 if (data.mensaje) {
+                    const color = obtenerColorAgente(data.agente);
                     const p = document.createElement('div');
                     p.className = 'linea-debate';
-                    p.innerHTML = `<span class="nombre-tag">${data.agente}:</span> ${data.mensaje}`;
+                    
+                    // Aplicamos el color dinámico al nombre
+                    p.innerHTML = `<span style="color: ${color}; font-weight: bold;">${data.agente}:</span> ${data.mensaje}`;
+                    
                     footer.appendChild(p);
                     footer.scrollTop = footer.scrollHeight;
                     
@@ -209,8 +228,9 @@
             } catch (e) { console.log(e); }
             setTimeout(siguienteTurno, 8000);
         }
-        siguienteTurno();
+        }
     </script>
 </body>
 </html>
+
 
