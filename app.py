@@ -15,8 +15,18 @@ def index():
 @app.route('/debate', methods=['POST'])
 def debate():
     try:
-        if not client:
-            return jsonify({"error": "Falta la API KEY en Render"}), 500
+        data = request.json
+        agente_actual = data.get('agente_actual', 'Lumen')
+        
+        # SI LA KEY NO ESTÁ, ESTO DARÁ UN ERROR CLARO
+        if not os.environ.get("GROQ_API_KEY"):
+            return jsonify({"mensaje": "ERROR: No configuraste la GROQ_API_KEY en Render", "agente": "SISTEMA"}), 200
+
+        # ... (resto del código de la llamada a Groq) ...
+        
+    except Exception as e:
+        # Esto enviará el error real de Python a tu consola F12
+        return jsonify({"mensaje": f"Error en Python: {str(e)}", "agente": "SISTEMA"}), 200
 
         data = request.json
         agente_actual = data.get('agente_actual', 'Lumen')
@@ -53,6 +63,7 @@ def debate():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
+
 
 
 
