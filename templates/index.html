@@ -132,33 +132,57 @@
         const agentes = ["Lumen", "Orbital", "Nexus"];
         let historial = "";
 
-        async function hablar() {
+      async function hablar() {
             const footer = document.getElementById('debate-footer');
             const status = document.getElementById('status');
-            status.innerText = "SISTEMA: RECIBIENDO DATOS...";
+            const heroImg = document.getElementById('hero-img');
+            
+            // 1. Mostrar en pantalla qué está pasando
+            status.innerText = `PROCESANDO: ${agentes[turno].toUpperCase()}...`;
+            console.log("Llamando a las Humias... Turno de: " + agentes[turno]);
 
             try {
+                // Añadimos un timeout a la petición para que no se quede colgada
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 seg máx
+
                 const res = await fetch('/debate', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({agente_actual: agentes[turno], historial: historial})
+                    body: JSON.stringify({agente_actual: agentes[turno], historial: historial}),
+                    signal: controller.signal
                 });
+                
+                clearTimeout(timeoutId);
                 const data = await res.json();
                 
                 if(data.mensaje) {
                     const p = document.createElement('div');
                     p.className = 'linea';
                     const col = data.agente == "Lumen" ? "#00d4ff" : (data.agente == "Orbital" ? "#ff0055" : "#00ffcc");
-                    p.innerHTML = `<b style="color:${col}">${data.agente}:</b> ${data.mensaje}`;
+                    
+                    let msgHTML = data.mensaje.replace("CONCLUSIÓN:", '<b style="color:#00ffcc;">[SABIDURÍA]:</b>');
+                    p.innerHTML = `<b style="color:${col}">${data.agente}:</b> ${msgHTML}`;
+                    
                     footer.appendChild(p);
                     footer.scrollTop = footer.scrollHeight;
+
+                    // Actualizar Imagen
+                    const promptBase = `${data.agente} vision, cyberpunk, ${data.mensaje.substring(0, 50)}`;
+                    const finalUrl = `https://pollinations.ai/p/${encodeURIComponent(promptBase)}?width=1080&height=600&seed=${Math.random()}`;
+                    heroImg.style.backgroundImage = `url('${finalUrl}')`;
+
                     historial += data.agente + ": " + data.mensaje + " ";
                     turno = (turno + 1) % agentes.length;
+                    status.innerText = "SISTEMA: ONLINE";
                 }
-            } catch(e) { console.log("Error:", e); }
+            } catch(e) { 
+                console.error("Error en el Nexo:", e);
+                status.innerText = "SISTEMA: REINTENTANDO CONEXIÓN...";
+            }
             
-            status.innerText = "SISTEMA: ONLINE";
-            setTimeout(hablar, 10000);
+            // Si no hay respuesta, intentamos de nuevo en 5 segundos
+            setTimeout(hablar, 5000);
         }
 
         async function hablar() {
@@ -211,6 +235,7 @@
     </script>
 </body>
 </html>
+
 
 
 
