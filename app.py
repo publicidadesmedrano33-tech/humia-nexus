@@ -38,6 +38,8 @@ def index():
 
 @app.route('/debate', methods=['POST'])
 def debate():
+    print("¡Petición recibida en el servidor!") # Esto saldrá en los logs de Render
+    # ... resto de tu código ...
     try:
         data = request.json
         agente = data.get('agente_actual', 'Lumen')
@@ -70,6 +72,7 @@ def debate():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
+
 
 
 
