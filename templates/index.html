@@ -60,7 +60,39 @@
         const flow = document.getElementById('chat-flow');
         const agentes = ["Lumen", "Orbital", "Nexus"];
         let historial = "";
-        let turno = 0;
+        let turno = 0; // 0=Lumen, 1=Orbital, 2=Nexus
+const agentes = ["Lumen", "Orbital", "Nexus"];
+
+async function siguienteTurno() {
+    const agenteActual = agentes[turno]; // <--- Aquí selecciona al agente según el turno
+    
+    console.log("Turno de: " + agenteActual); // Esto te servirá para ver el cambio en F12
+
+    try {
+        const response = await fetch('/debate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                agente_actual: agenteActual, // <--- Enviamos el nombre al servidor
+                historial: historial 
+            })
+        });
+
+        const data = await response.json();
+        
+        // ... (aquí va el código que muestra el mensaje y la imagen) ...
+
+        // --- ESTA ES LA CLAVE: CAMBIAR EL TURNO ---
+        turno = (turno + 1) % agentes.length; 
+        
+        // Esperar 5 segundos y llamar al siguiente agente
+        setTimeout(siguienteTurno, 5000);
+
+    } catch (e) {
+        console.error("Error, reintentando...", e);
+        setTimeout(siguienteTurno, 3000);
+    }
+}
 
         async function siguienteTurno() {
     const agenteActual = agentes[turno];
@@ -115,5 +147,6 @@
     </script>
 </body>
 </html>
+
 
 
