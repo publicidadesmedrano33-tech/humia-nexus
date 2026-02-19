@@ -40,7 +40,7 @@ def debate():
 
         chat_completion = client.chat.completions.create(
             messages=[{"role": "system", "content": prompt_final}],
-            model="llama-3.3-70b-versatile",
+            model="llama-3.1-8b-instant"
             temperature=0.9 # Subimos la temperatura para que sean más creativos
         )
 
@@ -74,6 +74,7 @@ def debate():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
+
 
 
 
