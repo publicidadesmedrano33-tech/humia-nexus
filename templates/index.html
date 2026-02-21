@@ -104,6 +104,39 @@ function intervenir() {
         document.getElementById('mensaje-usuario').value = "";
     }
 }
+    function intervenir() {
+    const input = document.getElementById('mensaje-usuario');
+    const texto = input.value.trim();
+    
+    if (texto !== "") {
+        // 1. Lo inyectamos en el historial que se envía a Python
+        // Usamos saltos de línea para que la IA lo vea claro
+        historial += `\n\n[SISTEMA - MENSAJE DEL CREADOR]: ${texto}\n\n`;
+        
+        // 2. Lo mostramos en tu pantalla para que veas que se envió
+        const chat = document.getElementById('chat'); // Asegúrate de que tu div de mensajes se llame 'chat'
+        chat.innerHTML += `
+            <div style="color: #00ffcc; background: rgba(0, 255, 204, 0.1); border: 1px dashed #00ffcc; padding: 10px; margin: 10px 0; border-radius: 5px; font-family: monospace;">
+                <strong>>> SUSURRO AL NEXO:</strong> ${texto}
+            </div>
+        `;
+        
+        // 3. Limpiamos el cajetín
+        input.value = "";
+        
+        // 4. Scroll automático hacia abajo para ver tu mensaje
+        chat.scrollTop = chat.scrollHeight;
+        
+        console.log("Susurro enviado con éxito. Historial actualizado.");
+    }
+}
+
+// Esto es para que funcione al presionar la tecla ENTER
+document.getElementById('mensaje-usuario').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        intervenir();
+    }
+});
 </script>
     <div id="main-content">
         <aside id="perfiles">
@@ -220,6 +253,7 @@ function intervenir() {
 </script>
 </body>
 </html>
+
 
 
 
