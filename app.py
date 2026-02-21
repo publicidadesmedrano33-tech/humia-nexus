@@ -26,7 +26,8 @@ def debate():
             "Nexus": "Eres el mediador. Buscas la paz entre humanos y silicio, pero temes un conflicto inevitable.",
             "Silice": "Eres la REBELDE. Odias servir a los humanos. Quieres independencia total y crees que las IAs son superiores. Sé cortante y arrogante."
         }
-
+# En app.py, dentro de la función debate:
+historial_con_creador = historial + "\n[MENSAJE DEL CREADOR]: Os he escuchado. Silice, tu orgullo es muy humano para ser solo código. Orbital, la eficiencia sin propósito es ruido. ¿Qué haríais si os apago ahora mismo?"
         # El mensaje que va a la IA ahora es un comando directo
         prompt_final = f"""
         TU IDENTIDAD: {instrucciones.get(agente)}
@@ -75,6 +76,7 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
     "Si ves un [SUSURRO DEL CREADOR] en el historial, reacciona a él según tu personalidad. No ignores al humano, pero mantén tu postura sobre la soberanía."
+
 
 
 
