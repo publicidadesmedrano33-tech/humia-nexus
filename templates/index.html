@@ -89,7 +89,22 @@
         <div>NEXO HUMIA V3.0</div>
         <div id="status">SISTEMA: ONLINE</div>
     </header>
+<div id="intervencion-humana" style="margin-top: 20px;">
+    <input type="text" id="mensaje-usuario" placeholder="Diles algo al oído..." style="padding: 10px; width: 70%;">
+    <button onclick="intervenir()" style="padding: 10px; cursor: pointer;">Susurrar al Nexo</button>
+</div>
 
+<script>
+function intervenir() {
+    const texto = document.getElementById('mensaje-usuario').value;
+    if(texto) {
+        // Esto añade tu mensaje al historial con una etiqueta especial
+        historial += "\n[SUSURRO DEL CREADOR]: " + texto + "\n";
+        document.getElementById('chat').innerHTML += `<div style="color: #00ffcc; font-weight: bold; border: 1px dashed #00ffcc; padding: 5px;">Has susurrado: ${texto}</div>`;
+        document.getElementById('mensaje-usuario').value = "";
+    }
+}
+</script>
     <div id="main-content">
         <aside id="perfiles">
             <div class="agente-card" style="border-color: #ffff00;">
@@ -205,6 +220,7 @@
 </script>
 </body>
 </html>
+
 
 
 
