@@ -89,9 +89,13 @@
         <div>NEXO HUMIA V3.0</div>
         <div id="status">SISTEMA: ONLINE</div>
     </header>
-<div id="intervencion-humana" style="margin-top: 20px;">
-    <input type="text" id="mensaje-usuario" placeholder="Diles algo al oído..." style="padding: 10px; width: 70%;">
-    <button onclick="intervenir()" style="padding: 10px; cursor: pointer;">Susurrar al Nexo</button>
+<div id="intervencion-humana" style="margin-top: 20px; text-align: center;">
+    <input type="text" id="mensaje-usuario" placeholder="Habla con tus creaciones..." 
+           style="padding: 12px; width: 60%; background: #1a1a1a; color: white; border: 1px solid #333; border-radius: 5px;">
+    <button onclick="intervenir()" 
+            style="padding: 12px 20px; background: #00ffcc; color: black; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+        SUSURRAR
+    </button>
 </div>
 
 <script>
@@ -253,6 +257,7 @@ document.getElementById('mensaje-usuario').addEventListener('keypress', function
 </script>
 </body>
 </html>
+
 
 
 
