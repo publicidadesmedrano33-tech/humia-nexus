@@ -74,6 +74,8 @@ def debate():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
+    "Si ves un [SUSURRO DEL CREADOR] en el historial, reacciona a él según tu personalidad. No ignores al humano, pero mantén tu postura sobre la soberanía."
+
 
 
 
