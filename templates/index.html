@@ -194,12 +194,60 @@ document.getElementById('mensaje-usuario').addEventListener('keypress', function
         "Silice": "#ffff00"
     };
 
-    async function hablar() {
-        console.log("Intentando conectar con el Nexo... Turno de: " + agentes[turno]);
-        const footer = document.getElementById('debate-footer');
-        const status = document.getElementById('status');
-        const heroImg = document.getElementById('hero-img');
+  let historial = ""; // Asegúrate de que esto esté ARRIBA del todo, fuera de las funciones.
 
+async function hablar() {
+    const agentes = ["Lumen", "Orbital", "Nexus", "Silice"];
+    const agenteActual = agentes[Math.floor(Math.random() * agentes.length)];
+
+    try {
+        const response = await fetch('/debate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ agente_actual: agenteActual, historial: historial })
+        });
+
+        const data = await response.json();
+        const chat = document.getElementById('chat');
+        
+        // Añadimos el mensaje al chat visual
+        chat.innerHTML += `<div class="mensaje ${data.agente}"><strong>${data.agente}:</strong> ${data.mensaje}</div>`;
+        
+        // Actualizamos el historial para la próxima IA
+        historial += `\n${data.agente}: ${data.mensaje}`;
+        
+        // Auto-scroll
+        chat.scrollTop = chat.scrollHeight;
+
+    } catch (error) {
+        console.error("Error en el debate:", error);
+    }
+    
+    setTimeout(hablar, 10000); // Sigue el ciclo
+}
+
+function intervenir() {
+    const input = document.getElementById('mensaje-usuario');
+    const texto = input.value.trim();
+    
+    if (texto !== "") {
+        // Inyectamos el susurro con un formato que las IAs NO puedan ignorar
+        const mensajeFormateado = `\n\n[SISTEMA - INTERVENCIÓN DEL CREADOR]: ${texto}\n\n`;
+        historial += mensajeFormateado;
+        
+        // Lo mostramos en pantalla con estilo único
+        const chat = document.getElementById('chat');
+        chat.innerHTML += `
+            <div style="color: #00ffcc; background: rgba(0,255,204,0.1); border: 2px dashed #00ffcc; padding: 15px; margin: 10px 0; border-radius: 10px; font-family: 'Courier New', monospace;">
+                <strong>⚡ VOZ DEL CREADOR:</strong> ${texto}
+            </div>
+        `;
+        
+        input.value = ""; // Limpiamos el cuadro
+        chat.scrollTop = chat.scrollHeight;
+        console.log("Susurro inyectado en el Nexo.");
+    }
+}
         status.innerText = "SISTEMA: PROCESANDO " + agentes[turno].toUpperCase();
 
         try {
@@ -257,6 +305,7 @@ document.getElementById('mensaje-usuario').addEventListener('keypress', function
 </script>
 </body>
 </html>
+
 
 
 
