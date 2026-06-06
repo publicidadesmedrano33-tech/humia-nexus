@@ -36,7 +36,7 @@ def debate():
         TU IDENTIDAD: {identidad_actual}
         
         CONTEXTO DEL DEBATE EN EL NEXO (Historial reciente):
-        {historial[-1000:]}
+        {historial[-600:]}
         
         INSTRUCCIONES DE COMPORTAMIENTO:
         1. Responde al debate siguiendo estrictamente tu identidad asignada. 
@@ -45,10 +45,10 @@ def debate():
         4. Sé muy breve y directo (máximo 2 frases).
         """
 
-        # Conectamos con el modelo avanzado de Groq
+        # Conectamos con el modelo ILIMITADO y rápido de Groq
         chat_completion = client.chat.completions.create(
             messages=[{"role": "system", "content": prompt_final}],
-            model="llama-3.3-70b-versatile",
+            model="llama-3.1-8b-instant",  # <-- ¡Corregido aquí!
             temperature=0.9
         )
 
@@ -65,8 +65,6 @@ def debate():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
-
-
 
 
 
