@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEXO HUMIA V3 - ESTABLE</title>
     <style>
         body {
@@ -218,16 +219,19 @@
     const canvas = document.getElementById('canvas-matrix');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    const drops = Array(Math.floor(canvas.width/16)).fill(1);
+    let drops = Array(Math.floor(canvas.width/16)).fill(1);
     
     function matrix() {
         ctx.fillStyle = "rgba(0,0,0,0.1)"; ctx.fillRect(0,0,canvas.width,canvas.height);
-        ctx.fillStyle = "#003344"; drops.forEach((y,i)=>{
+        ctx.fillStyle = "#003344";
+        ctx.font = "14px monospace";
+        drops.forEach((y, i) => {
             ctx.fillText(Math.floor(Math.random()*2), i*16, y*16);
-            if(y*16>canvas.height && Math.random()>0.975) drops[i]=0; drops[i]++;
+            if(y*16 > canvas.height && Math.random() > 0.975) drops[i] = 0; 
+            drops[i]++;
         });
     }
-    setInterval(matrix, 50);
+    let matrixInterval = setInterval(matrix, 50);
 
     // --- 2. LÓGICA DEL NEXO ---
     let turno = 0;
@@ -275,7 +279,7 @@
                 const colorActual = coloresFijos[data.agente] || "#ffffff";
                 const avatarActual = rutasAvatares[data.agente] || rutasAvatares["Sistema"];
 
-                // Actualizar rostro en el recuadro inferior izquierdo
+                // Actualizar rostro
                 avatarImg.style.opacity = '0';
                 setTimeout(() => {
                     avatarImg.src = avatarActual;
@@ -294,7 +298,7 @@
                 chatStream.appendChild(p);
                 chatStream.scrollTop = chatStream.scrollHeight;
 
-                // Renderizar imagen generativa central en base al contexto
+                // Renderizar imagen de forma segura (Controlando caracteres especiales y acentos)
                 const promptLimpio = data.mensaje.replace(/[^a-zA-Z0-9 ]/g, "").substring(0, 60);
                 const urlImagen = `https://pollinations.ai/p/${data.agente}_cyberpunk_${encodeURIComponent(promptLimpio)}?width=1080&height=600&seed=${Math.random()}`;
                 
@@ -307,10 +311,11 @@
         } catch(e) { 
             console.error("ERROR EN EL CICLO DEL NEXO:", e);
             statusText.innerText = "SISTEMA: REINTENTANDO...";
+        } finally {
+            statusText.innerText = "SISTEMA: ONLINE";
+            // El ciclo sigue aquí de forma segura para evitar solapamientos si una petición tarda de más
+            setTimeout(hablar, 10000);
         }
-        
-        statusText.innerText = "SISTEMA: ONLINE";
-        setTimeout(hablar, 10000);
     }
 
     function intervenir() {
@@ -344,6 +349,7 @@
 
     window.addEventListener('resize', () => {
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        drops = Array(Math.floor(canvas.width/16)).fill(1); // Reajuste de matriz en tiempo real
     });
     </script>
 </body>
