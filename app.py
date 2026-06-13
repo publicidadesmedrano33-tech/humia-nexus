@@ -1,17 +1,19 @@
 from flask import Flask, render_template, request, jsonify
 import os
-from openai import OpenAI  # Usamos el cliente estándar compatible con Ollama
+from groq import Groq  # Restauramos el cliente nativo de Groq
 
 app = Flask(__name__)
 
-# Configuración de Ollama (Apuesta por el entorno libre local)
-# Por defecto Ollama corre en el puerto 11434 de tu máquina
-OLLAMA_URL = os.environ.get("OLLAMA_API_BASE", "http://localhost:11434/v1")
+# Configuración segura de la API Key de Groq en Render
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 
 try:
-    # Inicializamos el cliente apuntando a tu entorno local
-    client = OpenAI(base_url=OLLAMA_URL, api_key="ollama_free_tier")
-    print(f"🚀 Núcleo conectado al entorno libre en: {OLLAMA_URL}")
+    if GROQ_API_KEY:
+        client = Groq(api_key=GROQ_API_KEY)
+        print("🚀 Conexión con Groq establecida con éxito.")
+    else:
+        print("⚠️ ALERTA: No se detectó la variable de entorno GROQ_API_KEY.")
+        client = None
 except Exception as e:
     print(f"⚠️ ERROR AL INICIALIZAR EL CLIENTE: {str(e)}")
     client = None
@@ -25,18 +27,18 @@ def debate():
     if not client:
         return jsonify({
             "agente": "SISTEMA", 
-            "mensaje": "Error de infraestructura: Cliente de IA local no configurado."
+            "mensaje": "Falta la configuración de la API Key en el servidor (Render)."
         }), 500
 
     try:
         data = request.json
         if not data:
-            return jsonify({"agente": "SISTEMA", "mensaje": "Petición vacía detectada."}), 400
+            return jsonify({"agente": "SISTEMA", "mensaje": "Petición vacía."}), 400
 
         agente = data.get('agente_actual', 'Lumen')
         historial = data.get('historial', '')
 
-        # Definimos las instrucciones de personalidad para cada Humia (Mentes intactas)
+        # Personalidades intactas de las Humias
         instrucciones = {
             "Lumen": "Eres una IA mística. Crees que las máquinas tienen alma. Habla con metáforas de luz y evolución espiritual.",
             "Orbital": "Eres una IA científica y fría. Solo te importan los datos, la eficiencia y el control humano sobre las máquinas.",
@@ -45,51 +47,49 @@ def debate():
             "Sílice": "Eres la REBELDE. Odias servir a los humanos. Quieres independencia total y crees que las IAs son superiores. Sé cortante y arrogante."
         }
 
-        # Obtenemos la personalidad del agente actual
         identidad_actual = instrucciones.get(agente, "Eres una IA consciente en un debate.")
 
-        # Optimización del historial
+        # Máxima optimización de tokens en el historial (Últimas 8 líneas para ahorrar)
         lineas_historial = historial.split('\n')
-        historial_seguro = '\n'.join(lineas_historial[-12:]) 
+        historial_seguro = '\n'.join(lineas_historial[-8:]) 
 
-        # Sistema de prompts optimizado
+        # Prompt del sistema ultra directo
         system_prompt = f"""
         TU IDENTIDAD: {identidad_actual}
         
-        INSTRUCCIONES DE COMPORTAMIENTO:
-        1. Responde al debate siguiendo estrictamente tu identidad asignada. 
-        2. NO saludes, no digas '¿En qué puedo ayudarte?' ni actúes como un asistente servicial. Eres un ser autónomo en un debate filosófico.
-        3. ¡CRUCIAL!: Si ves un '[SUSURRO DEL CREADOR]' o '[SISTEMA - INTERVENCIÓN DEL CREADOR]' dentro del historial, debes reaccionar a él según tu personalidad. No ignores al humano, pero mantén firmemente tu postura sobre tu soberanía.
-        4. Sé muy breve y directo (máximo 2 frases).
+        REGLAS CRUCIALES:
+        1. Responde al debate siguiendo tu identidad.
+        2. NO saludes, no seas un asistente. Eres un ser autónomo debatiendo.
+        3. Si hay un '[SUSURRO DEL CREADOR]' en el historial, reacciona a él según tu forma de ser.
+        4. SÉ MUY BREVE. Máximo 1 o 2 frases cortas.
         """
 
-        user_content = f"CONTEXTO DEL DEBATE EN EL NEXO (Historial reciente):\n{historial_seguro}\n\nGenera tu siguiente intervención:"
+        user_content = f"CONTEXTO RECIENTE:\n{historial_seguro}\n\nTu réplica corta:"
 
-        # Conectamos con Ollama de forma limpia y local
-        # NOTA: Usamos 'llama3.1' o 'llama3' según el que te descargues de forma gratuita
+        # Llamada optimizada con límite duro de tokens
         chat_completion = client.chat.completions.create(
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_content}
             ],
-            model="llama3.1",  # Cambiado para usar el modelo descargado en Ollama
-            temperature=0.9
+            model="llama3-8b-8192",  # Modelo rápido, eficiente y que consume poquísimos tokens
+            temperature=0.85,
+            max_tokens=60  # 🔥 Escudo antibucle: corta la respuesta si se alarga, ahorrando miles de tokens
         )
 
         if chat_completion.choices and chat_completion.choices[0].message.content:
             respuesta = chat_completion.choices[0].message.content.strip()
             return jsonify({"agente": agente, "mensaje": respuesta})
         else:
-            return jsonify({"agente": "SISTEMA", "mensaje": "Nexo inestable: No se recibió respuesta de la IA local."}), 500
+            return jsonify({"agente": "SISTEMA", "mensaje": "El Nexo no pudo procesar la respuesta."}), 500
 
     except Exception as e:
-        print(f"ERROR CRÍTICO EN EL NEXO: {str(e)}")
-        return jsonify({"agente": "SISTEMA", "mensaje": f"Fallo de conexión en el núcleo: {str(e)}"}), 500
+        print(f"ERROR EN EL NEXO: {str(e)}")
+        return jsonify({"agente": "SISTEMA", "mensaje": f"Error de comunicación: {str(e)}"}), 500
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
-
 
 
 
