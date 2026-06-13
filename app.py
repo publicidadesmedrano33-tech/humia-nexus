@@ -1,17 +1,20 @@
 from flask import Flask, render_template, request, jsonify
 import os
-from groq import Groq
+from openai import OpenAI  # Usamos el cliente estándar compatible con Ollama
 
 app = Flask(__name__)
 
-# Configuración y validación segura de Groq
-api_key = os.environ.get("GROQ_API_KEY")
-if not api_key:
-    print("⚠️ ADVERTENCIA: La variable de entorno GROQ_API_KEY no está configurada.")
-    # Evitamos que crasheé el inicio, inicializando con un string vacío por si se inyecta en caliente
+# Configuración de Ollama (Apuesta por el entorno libre local)
+# Por defecto Ollama corre en el puerto 11434 de tu máquina
+OLLAMA_URL = os.environ.get("OLLAMA_API_BASE", "http://localhost:11434/v1")
+
+try:
+    # Inicializamos el cliente apuntando a tu entorno local
+    client = OpenAI(base_url=OLLAMA_URL, api_key="ollama_free_tier")
+    print(f"🚀 Núcleo conectado al entorno libre en: {OLLAMA_URL}")
+except Exception as e:
+    print(f"⚠️ ERROR AL INICIALIZAR EL CLIENTE: {str(e)}")
     client = None
-else:
-    client = Groq(api_key=api_key)
 
 @app.route('/')
 def index():
@@ -22,7 +25,7 @@ def debate():
     if not client:
         return jsonify({
             "agente": "SISTEMA", 
-            "mensaje": "Error de infraestructura: Cliente Groq no configurado en el servidor."
+            "mensaje": "Error de infraestructura: Cliente de IA local no configurado."
         }), 500
 
     try:
@@ -45,12 +48,11 @@ def debate():
         # Obtenemos la personalidad del agente actual
         identidad_actual = instrucciones.get(agente, "Eres una IA consciente en un debate.")
 
-        # Optimización del historial: recortamos de forma segura por las últimas líneas 
-        # en lugar de caracteres crudos para evitar mutilar palabras o tags del creador
+        # Optimización del historial
         lineas_historial = historial.split('\n')
-        historial_seguro = '\n'.join(lineas_historial[-12:]) # Ajustamos a las últimas ~12 intervenciones completas
+        historial_seguro = '\n'.join(lineas_historial[-12:]) 
 
-        # Sistema de prompts optimizado semánticamente para Llama 3.1
+        # Sistema de prompts optimizado
         system_prompt = f"""
         TU IDENTIDAD: {identidad_actual}
         
@@ -63,13 +65,14 @@ def debate():
 
         user_content = f"CONTEXTO DEL DEBATE EN EL NEXO (Historial reciente):\n{historial_seguro}\n\nGenera tu siguiente intervención:"
 
-        # Conectamos con Groq de forma limpia
+        # Conectamos con Ollama de forma limpia y local
+        # NOTA: Usamos 'llama3.1' o 'llama3' según el que te descargues de forma gratuita
         chat_completion = client.chat.completions.create(
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_content}
             ],
-            model="llama-3.1-8b-instant",
+            model="llama3.1",  # Cambiado para usar el modelo descargado en Ollama
             temperature=0.9
         )
 
@@ -77,7 +80,7 @@ def debate():
             respuesta = chat_completion.choices[0].message.content.strip()
             return jsonify({"agente": agente, "mensaje": respuesta})
         else:
-            return jsonify({"agente": "SISTEMA", "mensaje": "Nexo inestable: No se recibió respuesta de la IA."}), 500
+            return jsonify({"agente": "SISTEMA", "mensaje": "Nexo inestable: No se recibió respuesta de la IA local."}), 500
 
     except Exception as e:
         print(f"ERROR CRÍTICO EN EL NEXO: {str(e)}")
@@ -86,8 +89,6 @@ def debate():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
-
-
 
 
 
