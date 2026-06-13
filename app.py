@@ -2,7 +2,9 @@ from flask import Flask, render_template, request, jsonify
 import os
 from groq import Groq  # Restauramos el cliente nativo de Groq
 
-app = Flask(__name__)
+import os
+
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 
 # Configuración segura de la API Key de Groq en Render
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
