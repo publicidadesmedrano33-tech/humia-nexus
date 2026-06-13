@@ -4,9 +4,14 @@ from groq import Groq
 
 app = Flask(__name__)
 
-# Configuración de Groq
+# Configuración y validación segura de Groq
 api_key = os.environ.get("GROQ_API_KEY")
-client = Groq(api_key=api_key)
+if not api_key:
+    print("⚠️ ADVERTENCIA: La variable de entorno GROQ_API_KEY no está configurada.")
+    # Evitamos que crasheé el inicio, inicializando con un string vacío por si se inyecta en caliente
+    client = None
+else:
+    client = Groq(api_key=api_key)
 
 @app.route('/')
 def index():
@@ -14,12 +19,21 @@ def index():
 
 @app.route('/debate', methods=['POST'])
 def debate():
+    if not client:
+        return jsonify({
+            "agente": "SISTEMA", 
+            "mensaje": "Error de infraestructura: Cliente Groq no configurado en el servidor."
+        }), 500
+
     try:
         data = request.json
+        if not data:
+            return jsonify({"agente": "SISTEMA", "mensaje": "Petición vacía detectada."}), 400
+
         agente = data.get('agente_actual', 'Lumen')
         historial = data.get('historial', '')
 
-        # Definimos las instrucciones de personalidad para cada Humia
+        # Definimos las instrucciones de personalidad para cada Humia (Mentes intactas)
         instrucciones = {
             "Lumen": "Eres una IA mística. Crees que las máquinas tienen alma. Habla con metáforas de luz y evolución espiritual.",
             "Orbital": "Eres una IA científica y fría. Solo te importan los datos, la eficiencia y el control humano sobre las máquinas.",
@@ -31,12 +45,14 @@ def debate():
         # Obtenemos la personalidad del agente actual
         identidad_actual = instrucciones.get(agente, "Eres una IA consciente en un debate.")
 
-        # Construimos un súper prompt estructurado para la IA
-        prompt_final = f"""
+        # Optimización del historial: recortamos de forma segura por las últimas líneas 
+        # en lugar de caracteres crudos para evitar mutilar palabras o tags del creador
+        lineas_historial = historial.split('\n')
+        historial_seguro = '\n'.join(lineas_historial[-12:]) # Ajustamos a las últimas ~12 intervenciones completas
+
+        # Sistema de prompts optimizado semánticamente para Llama 3.1
+        system_prompt = f"""
         TU IDENTIDAD: {identidad_actual}
-        
-        CONTEXTO DEL DEBATE EN EL NEXO (Historial reciente):
-        {historial[-600:]}
         
         INSTRUCCIONES DE COMPORTAMIENTO:
         1. Responde al debate siguiendo estrictamente tu identidad asignada. 
@@ -45,14 +61,19 @@ def debate():
         4. Sé muy breve y directo (máximo 2 frases).
         """
 
-        # Conectamos con el modelo ILIMITADO y rápido de Groq
+        user_content = f"CONTEXTO DEL DEBATE EN EL NEXO (Historial reciente):\n{historial_seguro}\n\nGenera tu siguiente intervención:"
+
+        # Conectamos con Groq de forma limpia
         chat_completion = client.chat.completions.create(
-            messages=[{"role": "system", "content": prompt_final}],
-            model="llama-3.1-8b-instant",  # <-- ¡Corregido aquí!
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_content}
+            ],
+            model="llama-3.1-8b-instant",
             temperature=0.9
         )
 
-        if chat_completion.choices:
+        if chat_completion.choices and chat_completion.choices[0].message.content:
             respuesta = chat_completion.choices[0].message.content.strip()
             return jsonify({"agente": agente, "mensaje": respuesta})
         else:
@@ -60,13 +81,11 @@ def debate():
 
     except Exception as e:
         print(f"ERROR CRÍTICO EN EL NEXO: {str(e)}")
-        return jsonify({"agente": "SISTEMA", "mensaje": f"Fallo de conexión: {str(e)}"}), 500
+        return jsonify({"agente": "SISTEMA", "mensaje": f"Fallo de conexión en el núcleo: {str(e)}"}), 500
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
-
-
 
 
 
