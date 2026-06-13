@@ -66,15 +66,15 @@ def debate():
 
         user_content = f"CONTEXTO RECIENTE:\n{historial_seguro}\n\nTu réplica corta:"
 
-        # Llamada optimizada con límite duro de tokens
+       # Conectamos con Groq usando el modelo correcto y activo
         chat_completion = client.chat.completions.create(
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_content}
             ],
-            model="llama-3.1-8b-instant",  # <-- ¡NUEVO MODELO SOPORTADO!
+            model="llama-3.1-8b-instant",  # <-- Cambiado y corregido aquí
             temperature=0.85,
-            max_tokens=80  # Le subo a 80 para que las Humias tengan un pelín más de espacio para hablar sin cortarse
+            max_tokens=80  
         )
 
         if chat_completion.choices and chat_completion.choices[0].message.content:
