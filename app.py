@@ -72,9 +72,9 @@ def debate():
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_content}
             ],
-            model="llama3-8b-8192",  # Modelo rápido, eficiente y que consume poquísimos tokens
+            model="llama-3.1-8b-instant",  # <-- ¡NUEVO MODELO SOPORTADO!
             temperature=0.85,
-            max_tokens=60  # 🔥 Escudo antibucle: corta la respuesta si se alarga, ahorrando miles de tokens
+            max_tokens=80  # Le subo a 80 para que las Humias tengan un pelín más de espacio para hablar sin cortarse
         )
 
         if chat_completion.choices and chat_completion.choices[0].message.content:
