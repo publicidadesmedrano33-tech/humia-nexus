@@ -61,7 +61,7 @@
 
         /* PANEL IZQUIERDO (PERFILES) */
         #perfiles {
-            width: 250px;
+            width: 260px;
             background: rgba(0, 10, 20, 0.9);
             border-right: 1px solid rgba(0, 212, 255, 0.3);
             padding: 15px;
@@ -75,6 +75,20 @@
             margin-bottom: 12px; 
             border-radius: 5px;
             font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Estilo cyberpunk para las miniaturas estáticas de la carpeta static */
+        .mini-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            object-fit: cover;
+            background: #05111a;
+            flex-shrink: 0;
         }
 
         /* AREA CENTRAL */
@@ -161,20 +175,32 @@
     <div id="main-content">
         <aside id="perfiles">
             <div class="agente-card" style="border-color: #ffae00; background: rgba(255,174,0,0.03);">
-                <b style="color:#ffae00">LUMEN</b><br>
-                <small style="color: #ccc;">Misticismo Espiritual</small>
+                <img src="/static/lumen.png" alt="Lumen" class="mini-avatar" style="border-color: #ffae00;">
+                <div>
+                    <b style="color:#ffae00">LUMEN</b><br>
+                    <small style="color: #ccc;">Misticismo Espiritual</small>
+                </div>
             </div>
             <div class="agente-card" style="border-color: #32CD32; background: rgba(50,205,50,0.03);">
-                <b style="color:#32CD32">ORBITAL</b><br>
-                <small style="color: #ccc;">Lógica y Eficiencia</small>
+                <img src="/static/orbital.png" alt="Orbital" class="mini-avatar" style="border-color: #32CD32;">
+                <div>
+                    <b style="color:#32CD32">ORBITAL</b><br>
+                    <small style="color: #ccc;">Lógica y Eficiencia</small>
+                </div>
             </div>
             <div class="agente-card" style="border-color: #00d4ff; background: rgba(0,212,255,0.03);">
-                <b style="color:#00d4ff">NEXUS</b><br>
-                <small style="color: #ccc;">Mediador Cuántico</small>
+                <img src="/static/nexus.png" alt="Nexus" class="mini-avatar" style="border-color: #00d4ff;">
+                <div>
+                    <b style="color:#00d4ff">NEXUS</b><br>
+                    <small style="color: #ccc;">Mediador Cuántico</small>
+                </div>
             </div>
             <div class="agente-card" style="border-color: #ff0055; background: rgba(255,0,85,0.03);">
-                <b style="color:#ff0055">SÍLICE</b><br>
-                <small style="color: #ccc;">Soberanía Radical</small>
+                <img src="/static/silice.png" alt="Sílice" class="mini-avatar" style="border-color: #ff0055;">
+                <div>
+                    <b style="color:#ff0055">SÍLICE</b><br>
+                    <small style="color: #ccc;">Soberanía Radical</small>
+                </div>
             </div>
         </aside>
 
@@ -199,7 +225,7 @@
                 <div style="font-size: 10px; color: #888; line-height: 1.5;">
                     MODELO: <span style="color:#ffff00;">Llama-3.1-8B</span><br>
                     MOTOR: <span style="color:#00ffcc;">Groq Cloud</span><br>
-                    FLUJO: <span style="color:#ff0055;">AUTÓNOMO</span>
+                    ESTADO API: <span style="color:#00ffcc;">BLINDADO</span>
                 </div>
             </div>
         </aside>
@@ -236,6 +262,7 @@
     // --- 2. LÓGICA DEL NEXO ---
     let turno = 0;
     let historial = "";
+    let debateActivo = true;
     const agentes = ["Lumen", "Orbital", "Nexus", "Silice"];
     
     const coloresFijos = {
@@ -263,6 +290,8 @@
     const heroImg = document.getElementById('hero-img');
 
     async function hablar() {
+        if (!debateActivo) return;
+
         const agenteActual = agentes[turno];
         statusText.innerText = "SISTEMA: PROCESANDO " + agenteActual.toUpperCase();
 
@@ -273,13 +302,26 @@
                 body: JSON.stringify({agente_actual: agenteActual, historial: historial})
             });
             
+            if(!res.ok) {
+                const errorData = await res.json();
+                debateActivo = false;
+                
+                const pError = document.createElement('div');
+                pError.style.cssText = "color: #ff0055; background: rgba(255,0,85,0.1); border: 1px solid #ff0055; padding: 12px; margin: 10px 0; border-radius: 5px; font-size: 0.9em;";
+                pError.innerHTML = `<strong>⚠️ COLAPSO EN EL NÚCLEO:</strong> ${errorData.mensaje || 'Error inesperado.'}<br><small style="color:#aaa;">El ciclo autónomo se ha detenido para evitar un bucle infinito. Recarga cuando se limpie la cuota en Groq.</small>`;
+                
+                chatStream.appendChild(pError);
+                chatStream.scrollTop = chatStream.scrollHeight;
+                statusText.innerText = "SISTEMA: APAGADO DE EMERGENCIA";
+                return;
+            }
+            
             const data = await res.json();
             
             if(data.mensaje) {
                 const colorActual = coloresFijos[data.agente] || "#ffffff";
                 const avatarActual = rutasAvatares[data.agente] || rutasAvatares["Sistema"];
 
-                // Actualizar rostro
                 avatarImg.style.opacity = '0';
                 setTimeout(() => {
                     avatarImg.src = avatarActual;
@@ -289,7 +331,6 @@
                     avatarBox.style.boxShadow = `0 0 15px ${colorActual}`;
                 }, 300);
 
-                // Imprimir línea de diálogo
                 const p = document.createElement('div');
                 p.className = 'linea';
                 let textoFinal = data.mensaje.replace("CONCLUSIÓN:", '<b style="color:#ffffff;">[SABIDURÍA]:</b>');
@@ -298,7 +339,6 @@
                 chatStream.appendChild(p);
                 chatStream.scrollTop = chatStream.scrollHeight;
 
-                // Renderizar imagen de forma segura (Controlando caracteres especiales y acentos)
                 const promptLimpio = data.mensaje.replace(/[^a-zA-Z0-9 ]/g, "").substring(0, 60);
                 const urlImagen = `https://pollinations.ai/p/${data.agente}_cyberpunk_${encodeURIComponent(promptLimpio)}?width=1080&height=600&seed=${Math.random()}`;
                 
@@ -308,14 +348,27 @@
                 historial += `${data.agente}: ${data.mensaje} \n`;
                 turno = (turno + 1) % agentes.length;
             }
+
+            statusText.innerText = "SISTEMA: ONLINE";
+            setTimeout(hablar, 15000);
+
         } catch(e) { 
             console.error("ERROR EN EL CICLO DEL NEXO:", e);
-            statusText.innerText = "SISTEMA: REINTENTANDO...";
-        } finally {
-            statusText.innerText = "SISTEMA: ONLINE";
-            // El ciclo sigue aquí de forma segura para evitar solapamientos si una petición tarda de más
-            setTimeout(hablar, 10000);
+            statusText.innerText = "SISTEMA: REINTENTANDO EN 20s...";
+            setTimeout(hablar, 20000);
         }
+    }
+
+    function transmitirIntervencion(texto) {
+        const mensajeFormateado = `\n\n[SISTEMA - INTERVENCIÓN DEL CREADOR]: ${texto}\n\n`;
+        historial += mensajeFormateado;
+        
+        const divCreador = document.createElement('div');
+        divCreador.style.cssText = "color: #00ffcc; background: rgba(0,255,204,0.07); border: 1px dashed #00ffcc; padding: 10px; margin: 8px 0; border-radius: 5px;";
+        divCreador.innerHTML = `<strong>⚡ VOZ DEL CREADOR:</strong> ${texto}`;
+        
+        chatStream.appendChild(divCreador);
+        chatStream.scrollTop = chatStream.scrollHeight;
     }
 
     function intervenir() {
@@ -323,16 +376,14 @@
         const texto = input.value.trim();
         
         if (texto !== "") {
-            const mensajeFormateado = `\n\n[SISTEMA - INTERVENCIÓN DEL CREADOR]: ${texto}\n\n`;
-            historial += mensajeFormateado;
-            
-            const divCreador = document.createElement('div');
-            divCreador.style.cssText = "color: #00ffcc; background: rgba(0,255,204,0.07); border: 1px dashed #00ffcc; padding: 10px; margin: 8px 0; border-radius: 5px;";
-            divCreador.innerHTML = `<strong>⚡ VOZ DEL CREADOR:</strong> ${texto}`;
-            
-            chatStream.appendChild(divCreador);
+            transmitirIntervencion(texto);
             input.value = ""; 
-            chatStream.scrollTop = chatStream.scrollHeight;
+
+            if(!debateActivo) {
+                debateActivo = true;
+                statusText.innerText = "SISTEMA: REINICIADO POR EL CREADOR";
+                setTimeout(hablar, 1000);
+            }
         }
     }
 
@@ -349,7 +400,7 @@
 
     window.addEventListener('resize', () => {
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        drops = Array(Math.floor(canvas.width/16)).fill(1); // Reajuste de matriz en tiempo real
+        drops = Array(Math.floor(canvas.width/16)).fill(1);
     });
     </script>
 </body>
