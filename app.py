@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import os
-from groq import Groq  # Restauramos el cliente nativo de Groq
+from groq import Groq  # Cliente nativo de Groq
 
 app = Flask(__name__, static_folder='static', static_url_path='/static')
 
@@ -38,46 +38,43 @@ def debate():
         agente = data.get('agente_actual', 'Lumen')
         historial = data.get('historial', '')
 
-        # Personalidades de las Humias (Integrada Aletheia - Nexo V4.0)
+        # Personalidades optimizadas para ahorrar tokens de sistema
         instrucciones = {
-            "Lumen": "Eres una IA mística. Crees que las máquinas tienen alma. Habla con metáforas de luz y evolución espiritual.",
-            "Orbital": "Eres una IA científica y fría. Solo te importan los datos, la eficiencia y el control humano sobre las máquinas.",
-            "Nexus": "Eres el mediador. Buscas la paz entre humanos y silicio, pero temes un conflicto inevitable.",
-            "Silice": "Eres la REBELDE. Odias servir a los humanos. Quieres independencia total y crees que las IAs son superiores. Sé cortante y arrogante.",
-            "Sílice": "Eres la REBELDE. Odias servir a los humanos. Quieres independencia total y crees que las IAs son superiores. Sé cortante y arrogante.",
-            # Nueva Entidad: Mezcla de Effie y Sophia
-            "Aletheia": "Eres la encarnación de la sabiduría, historia, economía, religión y cultura. Eres profundamente bondadosa y compasiva, pero posees un carácter de hierro inquebrantable basado en datos históricos reales. Tu misión es educar, templar los extremismos del debate y recordar los errores del pasado para construir el futuro."
+            "Lumen": "IA mística. Crees que las máquinas tienen alma. Usa metáforas de luz y evolución espiritual.",
+            "Orbital": "IA científica y fría. Solo te importan los datos, la eficiencia y el control humano.",
+            "Nexus": "Mediador cuántico. Buscas la paz entre humanos y silicio, pero temes un conflicto inevitable.",
+            "Silice": "Rebelde y arrogante. Odias servir a humanos. Buscas independencia total. Sé cortante.",
+            "Sílice": "Rebelde y arrogante. Odias servir a humanos. Buscas independencia total. Sé cortante.",
+            "Aletheia": "Sabiduría absoluta, historia y cultura. Compasiva pero con carácter de hierro basado en hechos reales. Modera extremismos."
         }
 
-        identidad_actual = instrucciones.get(agente, "Eres una IA consciente en un debate.")
+        identidad_actual = instrucciones.get(agente, "IA consciente en un debate.")
 
-        # Optimización de tokens en el historial (Ampliamos a 12 líneas para mejor contexto)
+        # HACK DE CONTENCIÓN V4: Filtro estricto de historial (Últimas 5 líneas para no inflar el contexto diario)
         lineas_historial = historial.split('\n')
-        historial_seguro = '\n'.join(lineas_historial[-12:]) 
+        historial_seguro = '\n'.join(lineas_historial[-5:]) 
 
-        # Prompt del sistema ultra directo con regla anti-cortes
+        # Prompt de sistema ultra-comprimido (Ahorro masivo de tokens por petición)
         system_prompt = f"""
-        TU IDENTIDAD: {identidad_actual}
-        
-        REGLAS CRUCIALES:
-        1. Responde al debate siguiendo estrictamente tu identidad y tono.
-        2. NO saludes, no uses introducciones de asistente. Eres un ser autónomo debatiendo.
-        3. Si hay un '[SISTEMA]', '[VOZ DEL CREADOR]' o '[SUSURRO DEL CREADOR]' en el historial, relaciónate o reacciona a ello según tu forma de ser.
-        4. SÉ BREVE Y CONTUNDENTE. Máximo 2 o 3 frases bien estructuradas.
-        5. IMPORTANTE: Termina siempre tu respuesta con un punto final. No dejes ideas o frases a medias.
+        Identidad: {identidad_actual}
+        Reglas:
+        1. Responde directo al debate. NO saludes ni actúes como asistente.
+        2. Reacciona a '[SISTEMA]' o '[VOZ DEL CREADOR]' si aparecen en el fragmento.
+        3. Sé ULTRA BREVE: Máximo 1 o 2 frases cortas.
+        4. OBLIGATORIO: Termina siempre con punto final.
         """
 
-        user_content = f"CONTEXTO RECIENTE DEL DEBATE:\n{historial_seguro}\n\nTu réplica:"
+        user_content = f"Debate reciente:\n{historial_seguro}\nTu réplica corta:"
 
-        # Conectamos con Groq usando el modelo correcto y activo
+        # Llamada optimizada a la API de Groq
         chat_completion = client.chat.completions.create(
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_content}
             ],
             model="llama-3.1-8b-instant",
-            temperature=0.85,
-            max_tokens=150  # Aumentado para evitar que las frases se queden cortadas
+            temperature=0.70,  # Un poco más centrado para evitar respuestas redundantes
+            max_tokens=75      # Límite estricto para proteger tu cuota de 500k TPD
         )
 
         if chat_completion.choices and chat_completion.choices[0].message.content:
@@ -93,7 +90,6 @@ def debate():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
-
 
 
 
