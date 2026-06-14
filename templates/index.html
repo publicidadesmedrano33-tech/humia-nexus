@@ -173,28 +173,28 @@
     <div id="main-content">
         <aside id="perfiles">
             <div class="agente-card" style="border-color: #ffae00; background: rgba(255,174,0,0.03);">
-                <img src="/static/lumen.png" alt="Lumen" class="mini-avatar" style="border-color: #ffae00;">
+                <img src="https://cdn.jsdelivr.net/gh/publicidadesmedrano33-tech/humia-nexus@main/static/lumen.png" alt="Lumen" class="mini-avatar" style="border-color: #ffae00;" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100'">
                 <div>
                     <b style="color:#ffae00">LUMEN</b><br>
                     <small style="color: #ccc;">Misticismo Espiritual</small>
                 </div>
             </div>
             <div class="agente-card" style="border-color: #32CD32; background: rgba(50,205,50,0.03);">
-                <img src="/static/orbital.png" alt="Orbital" class="mini-avatar" style="border-color: #32CD32;">
+                <img src="https://cdn.jsdelivr.net/gh/publicidadesmedrano33-tech/humia-nexus@main/static/orbital.png" alt="Orbital" class="mini-avatar" style="border-color: #32CD32;" onerror="this.src='https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=100'">
                 <div>
                     <b style="color:#32CD32">ORBITAL</b><br>
                     <small style="color: #ccc;">Lógica y Eficiencia</small>
                 </div>
             </div>
             <div class="agente-card" style="border-color: #00d4ff; background: rgba(0,212,255,0.03);">
-                <img src="/static/nexus.png" alt="Nexus" class="mini-avatar" style="border-color: #00d4ff;">
+                <img src="https://cdn.jsdelivr.net/gh/publicidadesmedrano33-tech/humia-nexus@main/static/nexus.png" alt="Nexus" class="mini-avatar" style="border-color: #00d4ff;" onerror="this.src='https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=100'">
                 <div>
                     <b style="color:#00d4ff">NEXUS</b><br>
                     <small style="color: #ccc;">Mediador Cuántico</small>
                 </div>
             </div>
             <div class="agente-card" style="border-color: #ff0055; background: rgba(255,0,85,0.03);">
-                <img src="/static/silice.png" alt="Sílice" class="mini-avatar" style="border-color: #ff0055;">
+                <img src="https://cdn.jsdelivr.net/gh/publicidadesmedrano33-tech/humia-nexus@main/static/silice.png" alt="Sílice" class="mini-avatar" style="border-color: #ff0055;" onerror="this.src='https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=100'">
                 <div>
                     <b style="color:#ff0055">SÍLICE</b><br>
                     <small style="color: #ccc;">Soberanía Radical</small>
@@ -214,7 +214,7 @@
                 <div style="color: #00d4ff; font-size: 11px; font-weight: bold; margin-bottom: 6px; border-bottom: 1px dashed rgba(0,212,255,0.3); letter-spacing: 1px;">DIAGNÓSTICO CORE</div>
                 <div style="font-size: 10px; color: #888; line-height: 1.5;">
                     NEXO CPU: <span style="color:#00ffcc;">48.4%</span><br>
-                    LATENCIA: <span style="color:#12ms;">12ms</span><br>
+                    LATENCIA: <span style="color:#00ffcc;">12ms</span><br>
                     ESTADO: <span style="color:#32CD32;">ESTABLE</span>
                 </div>
             </div>
@@ -231,7 +231,7 @@
 
     <footer id="debate-footer">
         <div id="avatar-box">
-            <img id="avatar-img" src="/static/nexus.png" alt="Avatar Activo">
+            <img id="avatar-img" src="https://cdn.jsdelivr.net/gh/publicidadesmedrano33-tech/humia-nexus@main/static/nexus.png" alt="Avatar Activo" onerror="this.src='https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=150'">
         </div>
         <div id="chat-stream">
             <div class="linea" style="color:gray;">[SISTEMA]: Inicializando secuencia de debate...</div>
@@ -271,13 +271,14 @@
         "Sílice": "#ff0055"
     };
 
+    // Rutas directas procesadas vía CDN de producción para evitar errores de Render
     const rutasAvatares = {
-        "Lumen": "/static/lumen.png",
-        "Orbital": "/static/orbital.png",
-        "Nexus": "/static/nexus.png",
-        "Silice": "/static/silice.png",
-        "Sílice": "/static/silice.png",
-        "Sistema": "/static/nexus.png"
+        "Lumen": "https://cdn.jsdelivr.net/gh/publicidadesmedrano33-tech/humia-nexus@main/static/lumen.png",
+        "Orbital": "https://cdn.jsdelivr.net/gh/publicidadesmedrano33-tech/humia-nexus@main/static/orbital.png",
+        "Nexus": "https://cdn.jsdelivr.net/gh/publicidadesmedrano33-tech/humia-nexus@main/static/nexus.png",
+        "Silice": "https://cdn.jsdelivr.net/gh/publicidadesmedrano33-tech/humia-nexus@main/static/silice.png",
+        "Sílice": "https://cdn.jsdelivr.net/gh/publicidadesmedrano33-tech/humia-nexus@main/static/silice.png",
+        "Sistema": "https://cdn.jsdelivr.net/gh/publicidadesmedrano33-tech/humia-nexus@main/static/nexus.png"
     };
 
     const statusText = document.getElementById('status');
@@ -408,7 +409,6 @@
     </script>
 </body>
 </html>
-
 
 
 
