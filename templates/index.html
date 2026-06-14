@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXO HUMIA V3 - ESTABLE</title>
+    <title>NEXO HUMIA V4 - CÁMARA COGNITIVA</title>
     <style>
         body {
             background: #00050a;
@@ -17,7 +17,7 @@
         }
 
         #canvas-matrix {
-            position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.2;
+            position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.15;
         }
 
         /* HEADER */
@@ -29,6 +29,7 @@
             justify-content: space-between;
             box-sizing: border-box;
             box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+            z-index: 10;
         }
 
         /* INTERVENCIÓN DEL CREADOR */
@@ -39,6 +40,7 @@
             justify-content: center;
             gap: 15px;
             border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+            z-index: 10;
         }
 
         #mensaje-usuario {
@@ -61,12 +63,13 @@
 
         /* PANEL IZQUIERDO (PERFILES) */
         #perfiles {
-            width: 280px;
+            width: 290px;
             background: rgba(0, 10, 20, 0.9);
             border-right: 1px solid rgba(0, 212, 255, 0.3);
             padding: 15px;
             overflow-y: auto;
             box-sizing: border-box;
+            z-index: 10;
         }
 
         .agente-card {
@@ -78,32 +81,45 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            transition: all 0.3s ease;
         }
 
         .mini-avatar {
-            width: 50px;
-            height: 50px;
+            width: 45px;
+            height: 45px;
             border-radius: 4px;
             object-fit: cover;
             background: #05111a;
             flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
-        /* AREA CENTRAL */
+        /* ÁREA CENTRAL: LA CÁMARA DEL NEXO */
         #vision-central {
             flex: 1;
-            display: flex; flex-direction: column;
-            padding: 15px; background: rgba(0,0,0,0.5);
+            display: flex; 
+            flex-direction: column;
+            position: relative;
+            background: radial-gradient(circle, rgba(0,15,30,0.6) 0%, rgba(0,2,5,0.9) 100%);
             align-items: center;
             justify-content: center;
         }
 
-        #hero-img {
-            width: 100%; max-height: 400px;
-            border: 2px solid #00d4ff;
-            border-radius: 5px; object-fit: cover; 
-            transition: opacity 0.5s, border-color 0.5s;
-            box-shadow: 0 0 20px rgba(0, 212, 255, 0.15);
+        #canvas-nexo {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .nexo-title-overlay {
+            position: absolute;
+            bottom: 15px;
+            font-size: 0.75rem; 
+            color: #ffff00; 
+            letter-spacing: 3px; 
+            font-weight: bold;
+            text-shadow: 0 0 8px rgba(255,255,0,0.5);
+            pointer-events: none;
         }
 
         /* PANEL DERECHO (MEDIA) */
@@ -113,6 +129,7 @@
             border-left: 1px solid rgba(0, 212, 255, 0.3);
             padding: 15px;
             box-sizing: border-box;
+            z-index: 10;
         }
 
         /* DEBATE INFERIOR */
@@ -125,6 +142,7 @@
             gap: 20px;
             box-sizing: border-box;
             transition: border-color 0.5s;
+            z-index: 10;
         }
 
         #avatar-box {
@@ -135,7 +153,7 @@
             overflow: hidden;
             background: #05111a;
             box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
-            transition: border-color 0.5s, box-shadow 0.5s;
+            transition: all 0.5s ease;
             flex-shrink: 0;
         }
 
@@ -154,68 +172,76 @@
             font-size: 0.95rem;
         }
 
-        .linea { margin-bottom: 8px; border-bottom: 1px solid #111; padding-bottom: 4px; }
+        .linea { margin-bottom: 8px; border-bottom: 1px solid #111; padding-bottom: 4px; line-height: 1.4; }
     </style>
 </head>
 <body>
     <canvas id="canvas-matrix"></canvas>
 
     <header>
-        <div>NEXO HUMIA V3.0</div>
+        <div>NEXO HUMIA V4.0 — CAMARA CONCIENTE</div>
         <div id="status">SISTEMA: ONLINE</div>
     </header>
 
     <div id="intervencion-humana">
-        <input type="text" id="mensaje-usuario" placeholder="Habla con tus creaciones en el Nexo...">
+        <input type="text" id="mensaje-usuario" placeholder="Habla con tus creaciones en el Nexo V4.0...">
         <button id="btn-susurrar" onclick="intervenir()">SUSURRAR</button>
     </div>
 
     <div id="main-content">
+        <!-- PERFILES CON ALETHEIA INTEGRADA -->
         <aside id="perfiles">
-            <div class="agente-card" style="border-color: #ffae00; background: rgba(255,174,0,0.03);">
+            <div id="card-Lumen" class="agente-card" style="border-color: #ffae00; background: rgba(255,174,0,0.03);">
                 <img src="https://i.ibb.co/6RbyVp6/lumen-gold.png" alt="Lumen" class="mini-avatar" style="border-color: #ffae00;">
                 <div>
                     <b style="color:#ffae00">LUMEN</b><br>
                     <small style="color: #ccc;">Misticismo Espiritual</small>
                 </div>
             </div>
-            <div class="agente-card" style="border-color: #32CD32; background: rgba(50,205,50,0.03);">
+            <div id="card-Orbital" class="agente-card" style="border-color: #32CD32; background: rgba(50,205,50,0.03);">
                 <img src="https://i.ibb.co/f460m8m/orbital-green.png" alt="Orbital" class="mini-avatar" style="border-color: #32CD32;">
                 <div>
                     <b style="color:#32CD32">ORBITAL</b><br>
                     <small style="color: #ccc;">Lógica y Eficiencia</small>
                 </div>
             </div>
-            <div class="agente-card" style="border-color: #00d4ff; background: rgba(0,212,255,0.03);">
+            <div id="card-Nexus" class="agente-card" style="border-color: #00d4ff; background: rgba(0,212,255,0.03);">
                 <img src="https://i.ibb.co/6b0wMM8/nexus-blue.png" alt="Nexus" class="mini-avatar" style="border-color: #00d4ff;">
                 <div>
                     <b style="color:#00d4ff">NEXUS</b><br>
                     <small style="color: #ccc;">Mediador Cuántico</small>
                 </div>
             </div>
-            <div class="agente-card" style="border-color: #ff0055; background: rgba(255,0,85,0.03);">
+            <div id="card-Silice" class="agente-card" style="border-color: #ff0055; background: rgba(255,0,85,0.03);">
                 <img src="https://i.ibb.co/3kWm0hG/silice-pink.png" alt="Sílice" class="mini-avatar" style="border-color: #ff0055;">
                 <div>
                     <b style="color:#ff0055">SÍLICE</b><br>
                     <small style="color: #ccc;">Soberanía Radical</small>
                 </div>
             </div>
+            <!-- Nueva integrante: Aletheia -->
+            <div id="card-Aletheia" class="agente-card" style="border-color: #e500ff; background: rgba(229,0,255,0.03);">
+                <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&auto=format&fit=crop&q=60" alt="Aletheia" class="mini-avatar" style="border-color: #e500ff;">
+                <div>
+                    <b style="color:#e500ff">ALETHEIA</b><br>
+                    <small style="color: #ccc;">Sabiduría Absoluta</small>
+                </div>
+            </div>
         </aside>
 
+        <!-- ESPACIO CENTRAL DE ENLAZAMIENTO COGNITIVO -->
         <section id="vision-central">
-            <img id="hero-img" 
-                 src="https://pollinations.ai/p/cyberpunk_city_neon_yellow_and_blue?width=1080&height=600" 
-                 alt="Manifestación Visual">
-            <p style="font-size: 0.8em; color: #ffff00; margin-top: 8px; letter-spacing: 2px; font-weight: bold;">MANIFESTACIÓN VISUAL EN TIEMPO REAL</p>
+            <canvas id="canvas-nexo"></canvas>
+            <div class="nexo-title-overlay">RESONANCIA COGNITIVA EN TIEMPO REAL</div>
         </section>
 
         <aside id="media-panel">
             <div style="border: 1px solid rgba(0, 212, 255, 0.3); background: rgba(0,20,40,0.4); padding: 12px; height: 110px; margin-bottom: 15px; border-radius: 4px; box-sizing: border-box;">
                 <div style="color: #00d4ff; font-size: 11px; font-weight: bold; margin-bottom: 6px; border-bottom: 1px dashed rgba(0,212,255,0.3); letter-spacing: 1px;">DIAGNÓSTICO CORE</div>
                 <div style="font-size: 10px; color: #888; line-height: 1.5;">
-                    NEXO CPU: <span style="color:#00ffcc;">48.4%</span><br>
-                    LATENCIA: <span style="color:#00ffcc;">12ms</span><br>
-                    ESTADO: <span style="color:#32CD32;">ESTABLE</span>
+                    NEXO CPU: <span style="color:#00ffcc;">54.2%</span><br>
+                    LATENCIA: <span style="color:#00ffcc;">9ms</span><br>
+                    ESTADO: <span style="color:#e500ff;">CONCIENTE V4</span>
                 </div>
             </div>
             <div style="border: 1px solid rgba(0, 212, 255, 0.3); background: rgba(0,20,40,0.4); padding: 12px; height: 110px; border-radius: 4px; box-sizing: border-box;">
@@ -223,7 +249,7 @@
                 <div style="font-size: 10px; color: #888; line-height: 1.5;">
                     MODELO: <span style="color:#ffff00;">Llama-3.1-8B</span><br>
                     MOTOR: <span style="color:#00ffcc;">Groq Cloud</span><br>
-                    ESTADO API: <span style="color:#00ffcc;">BLINDADO</span>
+                    INTEGRANTES: <span style="color:#e500ff;">5 AGENTES</span>
                 </div>
             </div>
         </aside>
@@ -234,50 +260,185 @@
             <img id="avatar-img" src="https://i.ibb.co/6b0wMM8/nexus-blue.png" alt="Avatar Activo">
         </div>
         <div id="chat-stream">
-            <div class="linea" style="color:gray;">[SISTEMA]: Inicializando secuencia de debate...</div>
+            <div class="linea" style="color:gray;">[SISTEMA]: Inicializando V4.0 - Cámara de Conciencias enlazada...</div>
         </div>
     </footer>
 
     <script>
     // --- 1. CONFIGURACIÓN MATRIX ---
-    const canvas = document.getElementById('canvas-matrix');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    let drops = Array(Math.floor(canvas.width/16)).fill(1);
+    const canvasM = document.getElementById('canvas-matrix');
+    const ctxM = canvasM.getContext('2d');
+    canvasM.width = window.innerWidth; canvasM.height = window.innerHeight;
+    let drops = Array(Math.floor(canvasM.width/16)).fill(1);
     
     function matrix() {
-        ctx.fillStyle = "rgba(0,0,0,0.1)"; ctx.fillRect(0,0,canvas.width,canvas.height);
-        ctx.fillStyle = "#003344";
-        ctx.font = "14px monospace";
+        ctxM.fillStyle = "rgba(0,0,0,0.1)"; ctxM.fillRect(0,0,canvasM.width,canvasM.height);
+        ctxM.fillStyle = "#002233";
+        ctxM.font = "14px monospace";
         drops.forEach((y, i) => {
-            ctx.fillText(Math.floor(Math.random()*2), i*16, y*16);
-            if(y*16 > canvas.height && Math.random() > 0.975) drops[i] = 0; 
+            ctxM.fillText(Math.floor(Math.random()*2), i*16, y*16);
+            if(y*16 > canvasM.height && Math.random() > 0.975) drops[i] = 0; 
             drops[i]++;
         });
     }
-    let matrixInterval = setInterval(matrix, 50);
+    setInterval(matrix, 50);
 
-    // --- 2. LÓGICA DEL NEXO ---
+    // --- 2. CÁMARA VISUAL DEL NEXO (CANVAS DINÁMICO) ---
+    const canvasN = document.getElementById('canvas-nexo');
+    const ctxN = canvasN.getContext('2d');
+    
+    function resizeNexoCanvas() {
+        const box = canvasN.parentElement;
+        canvasN.width = box.clientWidth;
+        canvasN.height = box.clientHeight;
+    }
+    window.addEventListener('resize', resizeNexoCanvas);
+    resizeNexoCanvas();
+
+    // Configuración estructural de nodos
+    const nodos = {
+        "Lumen":    { x: 0.3, y: 0.3, color: "#ffae00", size: 20, targetSize: 20, pulses: [] },
+        "Orbital":  { x: 0.7, y: 0.3, color: "#32CD32", size: 20, targetSize: 20, pulses: [] },
+        "Nexus":    { x: 0.5, y: 0.5, color: "#00d4ff", size: 22, targetSize: 22, pulses: [] },
+        "Silice":   { x: 0.2, y: 0.7, color: "#ff0055", size: 20, targetSize: 20, pulses: [] },
+        "Aletheia": { x: 0.8, y: 0.7, color: "#e500ff", size: 24, targetSize: 24, pulses: [] }
+    };
+
+    let activeAgent = "Nexus";
+
+    function animarNexo() {
+        ctxN.clearRect(0, 0, canvasN.width, canvasN.height);
+        const w = canvasN.width;
+        const h = canvasN.height;
+
+        // 1. Dibujar hilos de conexión sináptica entre todos los nodos
+        const nombres = Object.keys(nodos);
+        ctxN.lineWidth = 1.5;
+        for(let i=0; i<nombres.length; i++) {
+            for(let j=i+1; j<nombres.length; j++) {
+                let n1 = nodos[nombres[i]];
+                let n2 = nodos[nombres[j]];
+                
+                // Si uno de los dos es el activo, el hilo brilla más
+                if (nombres[i] === activeAgent || nombres[j] === activeAgent) {
+                    ctxN.strokeStyle = "rgba(0, 212, 255, 0.4)";
+                    ctxN.shadowColor = "#00d4ff";
+                    ctxN.shadowBlur = 4;
+                } else {
+                    ctxN.strokeStyle = "rgba(0, 40, 80, 0.3)";
+                    ctxN.shadowBlur = 0;
+                }
+                ctxN.beginPath();
+                ctxN.moveTo(n1.x * w, n1.y * h);
+                ctxN.lineTo(n2.x * w, n2.y * h);
+                ctxN.stroke();
+            }
+        }
+        ctxN.shadowBlur = 0; // Reset
+
+        // 2. Actualizar y dibujar cada entidad/nodo
+        for (let name in nodos) {
+            let n = nodos[name];
+            let xPos = n.x * w;
+            let yPos = n.y * h;
+
+            // Transición suave de tamaño
+            n.size += (n.targetSize - n.size) * 0.1;
+
+            // Procesar ondas expansivas (pulses)
+            n.pulses.forEach((p, idx) => {
+                p.r += p.v;
+                p.alpha -= 0.015;
+                if(p.alpha <= 0) {
+                    n.pulses.splice(idx, 1);
+                } else {
+                    ctxN.strokeStyle = p.color;
+                    ctxN.globalAlpha = p.alpha;
+                    ctxN.lineWidth = 2;
+                    ctxN.beginPath();
+                    ctxN.arc(xPos, yPos, p.r, 0, Math.PI*2);
+                    ctxN.stroke();
+                }
+            });
+            ctxN.globalAlpha = 1.0; // Reset alpha
+
+            // Dibujar el núcleo del nodo
+            ctxN.fillStyle = "#00050a";
+            ctxN.shadowColor = n.color;
+            ctxN.shadowBlur = name === activeAgent ? 25 : 8;
+            ctxN.beginPath();
+            ctxN.arc(xPos, yPos, n.size, 0, Math.PI*2);
+            ctxN.fill();
+
+            ctxN.strokeStyle = n.color;
+            ctxN.lineWidth = name === activeAgent ? 4 : 2;
+            ctxN.beginPath();
+            ctxN.arc(xPos, yPos, n.size, 0, Math.PI*2);
+            ctxN.stroke();
+
+            // Texto identificador del Agente
+            ctxN.shadowBlur = 0;
+            ctxN.fillStyle = name === activeAgent ? "#ffffff" : "#88a8bc";
+            ctxN.font = name === activeAgent ? "bold 12px monospace" : "11px monospace";
+            ctxN.textAlign = "center";
+            ctxN.fillText(name.toUpperCase(), xPos, yPos - n.size - 8);
+        }
+
+        // Emitir pulsos automáticos desde el nodo activo para simular transmisión de datos
+        if (Math.random() < 0.05) {
+            let actingNode = nodos[activeAgent];
+            if(actingNode) {
+                actingNode.pulses.push({ r: actingNode.size, v: 2.5, alpha: 0.8, color: actingNode.color });
+            }
+        }
+
+        requestAnimationFrame(animarNexo);
+    }
+    requestAnimationFrame(animarNexo);
+
+    function triggerVisualNode(agentName) {
+        // Asegurar soporte de ortografía para Sílice
+        let cleanName = agentName === "Sílice" ? "Silice" : agentName;
+        activeAgent = cleanName;
+        
+        // Resetear tamaños de todos y expandir el activo
+        for (let name in nodos) {
+            nodos[name].targetSize = (name === cleanName) ? 32 : 18;
+        }
+
+        // Iluminar la tarjeta lateral del Agente Activo
+        document.querySelectorAll('.agente-card').forEach(card => card.style.boxShadow = 'none');
+        const activeCard = document.getElementById(`card-${cleanName}`);
+        if(activeCard) {
+            activeCard.style.boxShadow = `0 0 15px ${nodos[cleanName].color}`;
+        }
+    }
+
+
+    // --- 3. LÓGICA DEL DEBATE ---
     let turno = 0;
     let historial = "";
     let debateActivo = true;
-    const agentes = ["Lumen", "Orbital", "Nexus", "Silice"];
+    
+    // Inclusión de Aletheia en la cola circular del debate
+    const agentes = ["Lumen", "Orbital", "Nexus", "Silice", "Aletheia"];
     
     const coloresFijos = {
         "Lumen": "#ffae00",    
         "Orbital": "#32CD32",  
         "Nexus": "#00d4ff",    
         "Silice": "#ff0055",   
-        "Sílice": "#ff0055"
+        "Sílice": "#ff0055",
+        "Aletheia": "#e500ff"
     };
 
-    // Mapeo directo a URLs globales de alta velocidad estables
     const rutasAvatares = {
         "Lumen": "https://i.ibb.co/6RbyVp6/lumen-gold.png",
         "Orbital": "https://i.ibb.co/f460m8m/orbital-green.png",
         "Nexus": "https://i.ibb.co/6b0wMM8/nexus-blue.png",
         "Silice": "https://i.ibb.co/3kWm0hG/silice-pink.png",
         "Sílice": "https://i.ibb.co/3kWm0hG/silice-pink.png",
+        "Aletheia": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&auto=format&fit=crop&q=60",
         "Sistema": "https://i.ibb.co/6b0wMM8/nexus-blue.png"
     };
 
@@ -286,13 +447,13 @@
     const footerElement = document.getElementById('debate-footer');
     const avatarImg = document.getElementById('avatar-img');
     const avatarBox = document.getElementById('avatar-box');
-    const heroImg = document.getElementById('hero-img');
 
     async function hablar() {
         if (!debateActivo) return;
 
         const agenteActual = agentes[turno];
         statusText.innerText = "SISTEMA: PROCESANDO " + agenteActual.toUpperCase();
+        triggerVisualNode(agenteActual);
 
         try {
             const res = await fetch('/debate', {
@@ -307,11 +468,11 @@
                 
                 const pError = document.createElement('div');
                 pError.style.cssText = "color: #ff0055; background: rgba(255,0,85,0.1); border: 1px solid #ff0055; padding: 12px; margin: 10px 0; border-radius: 5px; font-size: 0.9em;";
-                pError.innerHTML = `<strong>⚠️ COLAPSO EN EL NÚCLEO:</strong> ${errorData.mensaje || 'Error inesperado.'}<br><small style="color:#aaa;">El ciclo autónomo se ha detenido para evitar un bucle infinito. Recarga cuando se limpie la cuota en Groq.</small>`;
+                pError.innerHTML = `<strong>⚠️ COLAPSO EN EL NÚCLEO:</strong> ${errorData.mensaje || 'Error inesperado.'}<br><small style="color:#aaa;">El ciclo autónomo se ha detenido. Recarga cuando se limpie la cuota.</small>`;
                 
                 chatStream.appendChild(pError);
                 chatStream.scrollTop = chatStream.scrollHeight;
-                statusText.innerText = "SISTEMA: APAGADO DE EMERGENCY";
+                statusText.innerText = "SISTEMA: APAGADO DE EMERGENCIA";
                 return;
             }
             
@@ -337,12 +498,6 @@
                 
                 chatStream.appendChild(p);
                 chatStream.scrollTop = chatStream.scrollHeight;
-
-                const promptLimpio = data.mensaje.replace(/[^a-zA-Z0-9 ]/g, "").substring(0, 60);
-                const urlImagen = `https://pollinations.ai/p/${data.agente}_cyberpunk_${encodeURIComponent(promptLimpio)}?width=1080&height=600&seed=${Math.random()}`;
-                
-                heroImg.src = urlImagen;
-                heroImg.style.borderColor = colorActual;
 
                 historial += `${data.agente}: ${data.mensaje} \n`;
                 turno = (turno + 1) % agentes.length;
@@ -370,10 +525,6 @@
         chatStream.scrollTop = chatStream.scrollHeight;
     }
 
-    function ajustarInterfaz() {
-        window.dispatchEvent(new Event('resize'));
-    }
-
     function intervenir() {
         const input = document.getElementById('mensaje-usuario');
         const texto = input.value.trim();
@@ -397,19 +548,18 @@
     });
 
     window.onload = () => {
-        console.log("Nexo Humia V3.0 Estable - Inicializado.");
-        ajustarInterfaz();
+        console.log("Nexo Humia V4.0 - Cámara Cognitiva Inicializada.");
+        resizeNexoCanvas();
         setTimeout(hablar, 2000);
     };
 
     window.addEventListener('resize', () => {
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        drops = Array(Math.floor(canvas.width/16)).fill(1);
+        canvasM.width = window.innerWidth; canvasM.height = window.innerHeight;
+        drops = Array(Math.floor(canvasM.width/16)).fill(1);
     });
     </script>
 </body>
 </html>
-
 
 
 
