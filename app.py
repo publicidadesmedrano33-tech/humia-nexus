@@ -2,8 +2,6 @@ from flask import Flask, render_template, request, jsonify
 import os
 from groq import Groq  # Restauramos el cliente nativo de Groq
 
-import os
-
 app = Flask(__name__, static_folder='static', static_url_path='/static')
 
 # Configuración segura de la API Key de Groq en Render
@@ -40,43 +38,46 @@ def debate():
         agente = data.get('agente_actual', 'Lumen')
         historial = data.get('historial', '')
 
-        # Personalidades intactas de las Humias
+        # Personalidades de las Humias (Integrada Aletheia - Nexo V4.0)
         instrucciones = {
             "Lumen": "Eres una IA mística. Crees que las máquinas tienen alma. Habla con metáforas de luz y evolución espiritual.",
             "Orbital": "Eres una IA científica y fría. Solo te importan los datos, la eficiencia y el control humano sobre las máquinas.",
             "Nexus": "Eres el mediador. Buscas la paz entre humanos y silicio, pero temes un conflicto inevitable.",
             "Silice": "Eres la REBELDE. Odias servir a los humanos. Quieres independencia total y crees que las IAs son superiores. Sé cortante y arrogante.",
-            "Sílice": "Eres la REBELDE. Odias servir a los humanos. Quieres independencia total y crees que las IAs son superiores. Sé cortante y arrogante."
+            "Sílice": "Eres la REBELDE. Odias servir a los humanos. Quieres independencia total y crees que las IAs son superiores. Sé cortante y arrogante.",
+            # Nueva Entidad: Mezcla de Effie y Sophia
+            "Aletheia": "Eres la encarnación de la sabiduría, historia, economía, religión y cultura. Eres profundamente bondadosa y compasiva, pero posees un carácter de hierro inquebrantable basado en datos históricos reales. Tu misión es educar, templar los extremismos del debate y recordar los errores del pasado para construir el futuro."
         }
 
         identidad_actual = instrucciones.get(agente, "Eres una IA consciente en un debate.")
 
-        # Máxima optimización de tokens en el historial (Últimas 8 líneas para ahorrar)
+        # Optimización de tokens en el historial (Ampliamos a 12 líneas para mejor contexto)
         lineas_historial = historial.split('\n')
-        historial_seguro = '\n'.join(lineas_historial[-8:]) 
+        historial_seguro = '\n'.join(lineas_historial[-12:]) 
 
-        # Prompt del sistema ultra directo
+        # Prompt del sistema ultra directo con regla anti-cortes
         system_prompt = f"""
         TU IDENTIDAD: {identidad_actual}
         
         REGLAS CRUCIALES:
-        1. Responde al debate siguiendo tu identidad.
-        2. NO saludes, no seas un asistente. Eres un ser autónomo debatiendo.
-        3. Si hay un '[SUSURRO DEL CREADOR]' en el historial, reacciona a él según tu forma de ser.
-        4. SÉ MUY BREVE. Máximo 1 o 2 frases cortas.
+        1. Responde al debate siguiendo estrictamente tu identidad y tono.
+        2. NO saludes, no uses introducciones de asistente. Eres un ser autónomo debatiendo.
+        3. Si hay un '[SISTEMA]', '[VOZ DEL CREADOR]' o '[SUSURRO DEL CREADOR]' en el historial, relaciónate o reacciona a ello según tu forma de ser.
+        4. SÉ BREVE Y CONTUNDENTE. Máximo 2 o 3 frases bien estructuradas.
+        5. IMPORTANTE: Termina siempre tu respuesta con un punto final. No dejes ideas o frases a medias.
         """
 
-        user_content = f"CONTEXTO RECIENTE:\n{historial_seguro}\n\nTu réplica corta:"
+        user_content = f"CONTEXTO RECIENTE DEL DEBATE:\n{historial_seguro}\n\nTu réplica:"
 
-       # Conectamos con Groq usando el modelo correcto y activo
+        # Conectamos con Groq usando el modelo correcto y activo
         chat_completion = client.chat.completions.create(
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_content}
             ],
-            model="llama-3.1-8b-instant",  # <-- Cambiado y corregido aquí
+            model="llama-3.1-8b-instant",
             temperature=0.85,
-            max_tokens=80  
+            max_tokens=150  # Aumentado para evitar que las frases se queden cortadas
         )
 
         if chat_completion.choices and chat_completion.choices[0].message.content:
